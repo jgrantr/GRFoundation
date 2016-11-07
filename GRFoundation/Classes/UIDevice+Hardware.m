@@ -11,6 +11,12 @@
 
 MAKE_CATEGORIES_LOADABLE(UIDevice_Hardware);
 
+#if TARGET_OS_IPHONE
+static char *propertyName = "hw.machine";
+#else
+static char *propertyName = "hw.model";
+#endif
+
 @implementation UIDevice(Hardware)
 
 /*
@@ -73,7 +79,7 @@ MAKE_CATEGORIES_LOADABLE(UIDevice_Hardware);
     return results;
 }
 
-- (NSString *) platform {
+- (NSString *) specificModel {
 	static NSDictionary *lookup = nil;
 	if (lookup == nil) {
 		lookup = @{
@@ -97,10 +103,10 @@ MAKE_CATEGORIES_LOADABLE(UIDevice_Hardware);
 				  @"iPhone8,1" : @"iPhone 6s",
 				  @"iPhone8,2" : @"iPhone 6s Plus",
 				  @"iPhone8,4" : @"iPhone SE",
-				  @"iPhone9,1" : @"iPhone 7",
-				  @"iPhone9,2" : @"iPhone 7 Plus",
-				  @"iPhone9,3" : @"iPhone 7",
-				  @"iPhone9,4" : @"iPhone 7 Plus",
+				  @"iPhone9,1" : @"iPhone 7 (CDMA+GSM/LTE)",
+				  @"iPhone9,2" : @"iPhone 7 Plus (CDMA+GSM/LTE)",
+				  @"iPhone9,3" : @"iPhone 7 (GSM/LTE)",
+				  @"iPhone9,4" : @"iPhone 7 Plus (GSM/LTE)",
 				  @"iPod1,1"   : @"iPod Touch 1G",
 				  @"iPod2,1"   : @"iPod Touch 2G",
 				  @"iPod2,2"   : @"iPod Touch",
@@ -141,7 +147,7 @@ MAKE_CATEGORIES_LOADABLE(UIDevice_Hardware);
 				  @"x86_64"    : @"iPhone Simulator x64",
 				  };
 	}
-	NSString *rawStr = [self getSysInfoByName:"hw.machine"];
+	NSString *rawStr = [self getSysInfoByName:propertyName];
 	NSString *platform = [lookup objectForKey:rawStr];
 	if (platform == nil) {
 		platform = rawStr;
@@ -150,7 +156,7 @@ MAKE_CATEGORIES_LOADABLE(UIDevice_Hardware);
 }
 
 - (NSString *) hwModel {
-	return [self getSysInfoByName:"hw.model"];
+	return [self getSysInfoByName:propertyName];
 }
 
 @end

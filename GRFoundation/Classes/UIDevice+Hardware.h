@@ -10,7 +10,7 @@
 
 @interface UIDevice(Hardware)
 
-- (NSString *) platform;
+- (NSString *) specificModel;
 - (NSString *) hwModel;
 
 @end
