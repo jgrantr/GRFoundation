@@ -9,6 +9,7 @@
 #ifndef GRFoundation_h
 #define GRFoundation_h
 
-
+#import <GRFoundation/UIDevice+Hardware.h>
+#import <GRFoundation/UIImage+ColorReplacement.h>
 
 #endif /* GRFoundation_h */
