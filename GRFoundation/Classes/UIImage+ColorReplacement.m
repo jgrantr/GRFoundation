@@ -9,7 +9,7 @@
 #import "UIDevice+Hardware.h"
 #import "LoadableCategory.h"
 
-#import "GRToolkitLogging.h"
+#import "Logging.h"
 
 @import Accelerate;
 #import <float.h>

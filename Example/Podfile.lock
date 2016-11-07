@@ -1,6 +1,15 @@
 PODS:
+  - CocoaLumberjack (2.4.0):
+    - CocoaLumberjack/Default (= 2.4.0)
+    - CocoaLumberjack/Extensions (= 2.4.0)
+  - CocoaLumberjack/Core (2.4.0)
+  - CocoaLumberjack/Default (2.4.0):
+    - CocoaLumberjack/Core
+  - CocoaLumberjack/Extensions (2.4.0):
+    - CocoaLumberjack/Default
   - Expecta (1.0.5)
-  - GRFoundation (0.1.0)
+  - GRFoundation (0.1.0):
+    - CocoaLumberjack (~> 2.4)
   - Specta (1.0.5)
 
 DEPENDENCIES:
@@ -13,8 +22,9 @@ EXTERNAL SOURCES:
     :path: ../
 
 SPEC CHECKSUMS:
+  CocoaLumberjack: aa9dcab71bdf9eaf2a63bbd9ddc87863efe45457
   Expecta: e1c022fcd33910b6be89c291d2775b3fe27a89fe
-  GRFoundation: 3516d953855b9154b239aabc798682673837a234
+  GRFoundation: 94d4543639a44b5a9b844eb1e2bb4ba46732c0e8
   Specta: ac94d110b865115fe60ff2c6d7281053c6f8e8a2
 
 PODFILE CHECKSUM: 5f020749355fc3f9b949f3862382bc58c76099dd

@@ -40,5 +40,5 @@ extracting useful data about a iOS device.
 
   s.public_header_files = 'GRFoundation/Classes/**/GR*.h', 'GRFoundation/Classes/**/UI*.h', 'GRFoundation/Classes/**/NS*.h'
   s.frameworks = 'UIKit', 'Foundation'
-  # s.dependency 'AFNetworking', '~> 2.3'
+  s.dependency 'CocoaLumberjack', '~> 2.4'
 end
