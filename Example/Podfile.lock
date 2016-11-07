@@ -1,0 +1,22 @@
+PODS:
+  - Expecta (1.0.5)
+  - GRFoundation (0.1.0)
+  - Specta (1.0.5)
+
+DEPENDENCIES:
+  - Expecta
+  - GRFoundation (from `../`)
+  - Specta
+
+EXTERNAL SOURCES:
+  GRFoundation:
+    :path: ../
+
+SPEC CHECKSUMS:
+  Expecta: e1c022fcd33910b6be89c291d2775b3fe27a89fe
+  GRFoundation: 3516d953855b9154b239aabc798682673837a234
+  Specta: ac94d110b865115fe60ff2c6d7281053c6f8e8a2
+
+PODFILE CHECKSUM: 5f020749355fc3f9b949f3862382bc58c76099dd
+
+COCOAPODS: 1.0.1

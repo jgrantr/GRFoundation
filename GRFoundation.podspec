@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
   s.name             = 'GRFoundation'
   s.version          = '0.1.0'
-  s.summary          = 'A short description of GRFoundation.'
+  s.summary          = 'Utility extensions to the Foundation and UIKit frameworks'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,14 +18,16 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+This collects a number of categories that flesh-out the Foundation and UIKit frameworks with some much-needed
+functionality. Includes a number of image manipulation and creation routines, as well as some helpers for
+extracting useful data about a iOS device.
                        DESC
 
-  s.homepage         = 'https://github.com/<GITHUB_USERNAME>/GRFoundation'
+  s.homepage         = 'https://github.com/jgrantr/GRFoundation'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Grant Robinson' => 'grant@zayda.com' }
-  s.source           = { :git => 'https://github.com/<GITHUB_USERNAME>/GRFoundation.git', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/jgrantr/GRFoundation.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
   s.ios.deployment_target = '8.0'
@@ -36,7 +38,7 @@ TODO: Add long description of the pod here.
   #   'GRFoundation' => ['GRFoundation/Assets/*.png']
   # }
 
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
+  s.public_header_files = 'GRFoundation/Classes/**/GR*.h', 'GRFoundation/Classes/**/UI*.h', 'GRFoundation/Classes/**/NS*.h'
+  s.frameworks = 'UIKit', 'Foundation'
   # s.dependency 'AFNetworking', '~> 2.3'
 end

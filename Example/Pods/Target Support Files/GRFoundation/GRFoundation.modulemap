@@ -1,0 +1,6 @@
+framework module GRFoundation {
+  umbrella header "GRFoundation-umbrella.h"
+
+  export *
+  module * { export * }
+}

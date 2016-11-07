@@ -1,0 +1,6 @@
+framework module Pods_GRFoundation_Tests {
+  umbrella header "Pods-GRFoundation_Tests-umbrella.h"
+
+  export *
+  module * { export * }
+}

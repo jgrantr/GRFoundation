@@ -22,7 +22,7 @@ pod "GRFoundation"
 
 ## Author
 
-Grant Robinson, grant@zayda.com
+Grant Robinson
 
 ## License
 
