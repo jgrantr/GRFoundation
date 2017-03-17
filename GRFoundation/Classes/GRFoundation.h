@@ -11,5 +11,6 @@
 
 #import <GRFoundation/UIDevice+Hardware.h>
 #import <GRFoundation/UIImage+ColorReplacement.h>
+#import <GRFoundation/GRObservable.h>
 
 #endif /* GRFoundation_h */
