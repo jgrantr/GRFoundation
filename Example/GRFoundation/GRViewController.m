@@ -12,6 +12,7 @@
 @interface GRViewController ()
 {
 	GRObservable *observable;
+	GRObservable *obs2;
 }
 
 @end
@@ -38,6 +39,17 @@
 	}, ^() {
 		NSLog(@"complete");
 		observable = nil;
+	});
+	
+	obs2 = GRObservable.observable(^(id<GRObserver> observer) {
+		[observer next:@(1)];
+		[observer next:@(5)];
+		[observer next:@(10)];
+		[observer complete];
+	});
+	
+	GRSubscribe(obs2, ^(id value) {
+		NSLog(@"%@", value);
 	});
 }
 

@@ -27,8 +27,8 @@
 
 @end
 
-#define GRSubscribe(observable, next, ...) __GRSubscribe(observable, next, __VA_ARGS__, 2, 1)
-#define __GRSubscribe(observable, _next, _error, _complete, N, ...) observable.subscribeWithLiterals(N+1, _next, _error, _complete)
+#define GRSubscribe(observable, ...) __GRSubscribe(observable, __VA_ARGS__, 3, 2, 1, 0)
+#define __GRSubscribe(observable, _next, _error, _complete, N, ...) observable.subscribeWithLiterals(N, _next, _error, _complete)
 
 
 @interface GRObservable : NSObject
