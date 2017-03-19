@@ -257,14 +257,14 @@ static dispatch_queue_t _privateQ;
 				shouldPassAlong = YES;
 			}
 			else if (comparisonBlock) {
-				shouldPassAlong = comparisonBlock(prevValue, value);
+				shouldPassAlong = (comparisonBlock(prevValue, value) == NO);
 			}
 			else {
 				if ([prevValue respondsToSelector:@selector(gr_isEqual:)]) {
-					shouldPassAlong = [prevValue gr_isEqual:value];
+					shouldPassAlong = ([prevValue gr_isEqual:value] == NO);
 				}
 				else {
-					shouldPassAlong = [prevValue isEqual:value];
+					shouldPassAlong = ([prevValue isEqual:value] == NO);
 				}
 			}
 			
