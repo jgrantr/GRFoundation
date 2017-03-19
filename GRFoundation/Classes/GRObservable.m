@@ -108,7 +108,7 @@ static dispatch_queue_t _privateQ;
 	return observable;
 }
 
-+ (instancetype (^)(void (^)(id<GRObserver> observer)))observable {
++ (GRObservable *(^)(void (^)(id<GRObserver> observer)))observable {
 	return ^GRObservable*(void (^observer)(id<GRObserver>)) {
 		GRObservable *observable = [[GRObservable alloc] init];
 		observable.block = observer;
