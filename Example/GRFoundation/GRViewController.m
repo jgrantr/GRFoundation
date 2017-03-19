@@ -13,6 +13,8 @@
 {
 	GRObservable *observable;
 	GRObservable *obs2;
+	GRObservable *filter;
+	GRObservable *destroyQuickly;
 }
 
 @end
@@ -50,7 +52,49 @@
 	
 	GRSubscribe(obs2, ^(id value) {
 		NSLog(@"%@", value);
+	}, nil, ^{
+		obs2 = nil;
 	});
+	
+	filter = GRObservable.observable(^(id<GRObserver> observer) {
+		[observer next:@(1)];
+		[observer next:@(1)];
+		[observer next:@(1)];
+		[observer next:@(2)];
+		[observer next:@(2)];
+		[observer next:@(2)];
+		[observer next:@(1)];
+		[observer next:@(3)];
+		[observer complete];
+	}).distinctUntilChanged(nil);
+	
+	GRSubscribe(filter,
+		^(id value) {
+			NSLog(@"filtered: %@", value);
+		},
+		nil,
+		^{
+			filter = nil;
+		}
+	);
+	
+	destroyQuickly = GRObservable.observable(^(id<GRObserver> observer) {
+		[observer next:@(1)];
+		[observer next:@(1)];
+		[observer next:@(1)];
+		[observer next:@(2)];
+		[observer next:@(2)];
+		[observer next:@(2)];
+		[observer next:@(1)];
+		[observer next:@(3)];
+		[observer complete];
+	}).distinctUntilChanged(nil);
+	
+	GRSubscribe(destroyQuickly, ^(id value) {
+		NSLog(@"destroyQuickly: %@", value);
+	});
+	
+	destroyQuickly = nil;
 }
 
 - (void)didReceiveMemoryWarning

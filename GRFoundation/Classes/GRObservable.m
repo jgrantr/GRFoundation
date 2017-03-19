@@ -8,6 +8,10 @@
 
 #import "GRObservable.h"
 
+#import <objc/runtime.h>
+
+static char associatedObserverKey;
+
 static dispatch_queue_t _privateQ;
 
 @interface GRSubscriber ()
@@ -24,6 +28,7 @@ static dispatch_queue_t _privateQ;
 }
 
 @property (nonatomic, copy) void (^block)(id<GRObserver> observer);
+@property (nonatomic, weak) GRSubscriber *subscriptionToOtherObservable;
 
 - (void) addSubscriber:(GRSubscriber *)subscriber;
 - (void) removeSubscriber:(GRSubscriber *)subscriber;
@@ -57,6 +62,9 @@ static dispatch_queue_t _privateQ;
 	return [self next:next error:nil complete:nil];
 }
 
+- (BOOL) gr_isEqual:(id)otherObject {
+	return [self isEqual:otherObject];
+}
 
 - (void) dealloc {
 	NSLog(@"dealloc of GRSubscriber<%p> called", self);
@@ -118,6 +126,10 @@ static dispatch_queue_t _privateQ;
 
 - (void) dealloc {
 	NSLog(@"dealloc of GRObservable<%p> called", self);
+	if (self.subscriptionToOtherObservable) {
+		[self.subscriptionToOtherObservable unsubscribe];
+		self.subscriptionToOtherObservable = nil;
+	}
 }
 
 - (void) addSubscriber:(GRSubscriber *)subscriber {
@@ -197,9 +209,7 @@ static dispatch_queue_t _privateQ;
 			toReturn = sub;
 		}
 		if (shouldExecuteBlock) {
-			dispatch_async(dispatch_get_main_queue(), ^{
-				self.block(self);
-			});
+			self.block(self);
 		}
 		return toReturn;
 	};
@@ -231,6 +241,51 @@ static dispatch_queue_t _privateQ;
 		}
 		va_end(args);
 		return self.subscribe(sub);
+	};
+}
+
+- (GRObservable *(^)(BOOL (^)(id prev, id cur))) distinctUntilChanged {
+	return ^GRObservable*(BOOL (^comparisonBlock)(id prev, id current)) {
+		__block __weak id<GRObserver> observer = nil;
+		__block id prevValue = nil;
+		GRObservable *toReturn = GRObservable.observable(^(id<GRObserver> _observer) {
+			observer = _observer;
+		});
+		toReturn.subscriptionToOtherObservable = GRSubscribe(self, ^(id value) {
+			BOOL shouldPassAlong = NO;
+			if (prevValue == nil) {
+				shouldPassAlong = YES;
+			}
+			else if (comparisonBlock) {
+				shouldPassAlong = comparisonBlock(prevValue, value);
+			}
+			else {
+				if ([prevValue respondsToSelector:@selector(gr_isEqual:)]) {
+					shouldPassAlong = [prevValue gr_isEqual:value];
+				}
+				else {
+					shouldPassAlong = [prevValue isEqual:value];
+				}
+			}
+			
+			if (shouldPassAlong) {
+				[observer next:value];
+				prevValue = value;
+			}
+			
+		}, ^(NSError *error) {
+			[observer error:error];
+			observer = nil;
+			prevValue = nil;
+		}, ^{
+			[observer complete];
+			observer = nil;
+			prevValue = nil;
+		});
+		if (observer) {
+			objc_setAssociatedObject(toReturn, &associatedObserverKey, observer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+		}
+		return toReturn;
 	};
 }
 

@@ -34,9 +34,20 @@
 @interface GRObservable : NSObject
 
 + (instancetype) withBlock:(void (^)(id<GRObserver> observer))block;
-+ (instancetype (^)(void (^)(id<GRObserver> observer)))observable;
++ (GRObservable* (^)(void (^)(id<GRObserver> observer)))observable;
 
 - (GRSubscriber *(^)(id nextOrObservable))subscribe;
 - (GRSubscriber *(^)(int, ...))subscribeWithLiterals;
+
+/**
+ * Returns a new observable that will emit values that are distinct from the previous value.  For example,
+ * if the source observable emits {1, 1, 2, 2, 2, 1, 3, 4}, this observable will emit {1, 2, 1, 3, 4}.  If a comparison
+ * block is passed, it will be used to determine equality.
+ *
+ * If no block is passed, the gr_isEqual: selector will be used.
+ * If the object does not respond to the gr_isEqual: selector, the isEqual: selector will be used.
+ *
+ */
+- (GRObservable *(^)(BOOL (^)(id prev, id cur))) distinctUntilChanged;
 
 @end
