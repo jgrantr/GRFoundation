@@ -201,13 +201,13 @@ static dispatch_queue_t _privateQ;
 		GRSubscriber *toReturn = nil;
 		if ([nextOrSubscriber isKindOfClass:[GRSubscriber class]]) {
 			toReturn = nextOrSubscriber;
-			[self addSubscriber:nextOrSubscriber];
 		}
 		else if (nextOrSubscriber) {
 			GRSubscriber *sub = [[GRSubscriber alloc] init];
 			sub.nextBlock = nextOrSubscriber;
 			toReturn = sub;
 		}
+		if (toReturn) [self addSubscriber:toReturn];
 		if (shouldExecuteBlock) {
 			self.block(self);
 		}
@@ -215,31 +215,16 @@ static dispatch_queue_t _privateQ;
 	};
 }
 
-- (GRSubscriber *(^)(int, ...))subscribeWithLiterals {
-	return ^GRSubscriber*(int count, ...) {
-		if (count == 0) {
-			@throw [NSException exceptionWithName:@"NSInternalConsistencyException" reason:@"subscribeWithLiterals needs at least 1 block of type void (^)(id value)" userInfo:nil];
-		}
-		if (count > 3) {
-			@throw [NSException exceptionWithName:@"NSInternalConsistencyException" reason:@"subscriberWithLiterals should have no more than 3 parameters" userInfo:nil];
+- (GRSubscriber *(^)(GRObservableNextBlock, GRObservableErrorBlock, GRObservableCompleteBlock))subscribeWithLiterals
+{
+	return ^GRSubscriber*(GRObservableNextBlock next, GRObservableErrorBlock error, GRObservableCompleteBlock complete) {
+		if (!next && !error && !complete) {
+			@throw [NSException exceptionWithName:@"NSInternalConsistencyException" reason:[NSString stringWithFormat:@"subscribeWithLiterals requires at least 1 block (given next: %@, error: %@, complete %@)", next, error, complete] userInfo:nil];
 		}
 		GRSubscriber *sub = [[GRSubscriber alloc] init];
-		id eachObject = nil;
-		va_list args;
-		va_start(args, count);
-		for (int i = 0; i < count; i++) {
-			eachObject = va_arg(args, id);
-			if (i == 0) {
-				sub.nextBlock = eachObject;
-			}
-			else if (i == 1) {
-				sub.errorBlock = eachObject;
-			}
-			else if (i == 2){
-				sub.completeBlock = eachObject;
-			}
-		}
-		va_end(args);
+		sub.nextBlock = next;
+		sub.errorBlock = error;
+		sub.completeBlock = complete;
 		return self.subscribe(sub);
 	};
 }
@@ -251,7 +236,7 @@ static dispatch_queue_t _privateQ;
 		GRObservable *toReturn = GRObservable.observable(^(id<GRObserver> _observer) {
 			observer = _observer;
 		});
-		toReturn.subscriptionToOtherObservable = GRSubscribe(self, ^(id value) {
+		toReturn.subscriptionToOtherObservable = self.subscribeWithLiterals(^(id value) {
 			BOOL shouldPassAlong = NO;
 			if (prevValue == nil) {
 				shouldPassAlong = YES;

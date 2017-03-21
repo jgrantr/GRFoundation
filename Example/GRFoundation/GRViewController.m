@@ -52,7 +52,9 @@
 	
 	GRSubscribe(obs2, ^(id value) {
 		NSLog(@"%@", value);
-	}, nil, ^{
+	}, ^(NSError *error) {
+		NSLog(@"error in obs2, %@", error);
+	}, ^{
 		obs2 = nil;
 	});
 	
@@ -72,7 +74,9 @@
 		^(id value) {
 			NSLog(@"filtered: %@", value);
 		},
-		nil,
+		^(NSError *error) {
+			NSLog(@"error, : %@", error);
+		},
 		^{
 			filter = nil;
 		}
@@ -92,6 +96,10 @@
 	
 	GRSubscribe(destroyQuickly, ^(id value) {
 		NSLog(@"destroyQuickly: %@", value);
+	}, ^(NSError *error) {
+		NSLog(@"error: %@", error);
+	}, ^{
+		NSLog(@"complete");
 	});
 	
 	destroyQuickly = nil;

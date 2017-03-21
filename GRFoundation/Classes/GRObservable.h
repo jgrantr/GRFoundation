@@ -8,6 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
+typedef void (^GRObservableNextBlock)(id value);
+typedef void (^GRObservableErrorBlock)(NSError *error);
+typedef void (^GRObservableCompleteBlock)();
+
 @protocol GRObserver <NSObject>
 
 @required
@@ -27,8 +31,8 @@
 
 @end
 
-#define GRSubscribe(observable, ...) __GRSubscribe(observable, __VA_ARGS__, 3, 2, 1, 0)
-#define __GRSubscribe(observable, _next, _error, _complete, N, ...) observable.subscribeWithLiterals(N, _next, _error, _complete)
+#define GRSubscribe(observable, ...) __GRSubscribe(observable, __VA_ARGS__, nil, nil, nil)
+#define __GRSubscribe(observable, _next, _error, _complete, ...) observable.subscribeWithLiterals(_next, _error, _complete)
 
 
 @interface GRObservable : NSObject
@@ -37,7 +41,7 @@
 + (GRObservable* (^)(void (^)(id<GRObserver> observer)))observable;
 
 - (GRSubscriber *(^)(id nextOrObservable))subscribe;
-- (GRSubscriber *(^)(int, ...))subscribeWithLiterals;
+- (GRSubscriber *(^)(GRObservableNextBlock, GRObservableErrorBlock, GRObservableCompleteBlock))subscribeWithLiterals;
 
 /**
  * Returns a new observable that will emit values that are distinct from the previous value.  For example,
