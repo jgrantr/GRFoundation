@@ -217,14 +217,15 @@ static dispatch_queue_t _privateQ;
 
 - (GRSubscriber *(^)(GRObservableNextBlock, GRObservableErrorBlock, GRObservableCompleteBlock))subscribeWithLiterals
 {
-	return ^GRSubscriber*(GRObservableNextBlock next, GRObservableErrorBlock error, GRObservableCompleteBlock complete) {
+	
+	return ^GRSubscriber*(GRObservableNextBlock next, GRObservableErrorBlock error, GRObservableCompleteBlock completeBlock) {
 		if (!next && !error && !complete) {
-			@throw [NSException exceptionWithName:@"NSInternalConsistencyException" reason:[NSString stringWithFormat:@"subscribeWithLiterals requires at least 1 block (given next: %@, error: %@, complete %@)", next, error, complete] userInfo:nil];
+			@throw [NSException exceptionWithName:@"NSInternalConsistencyException" reason:[NSString stringWithFormat:@"subscribeWithLiterals requires at least 1 block (given next: %@, error: %@, complete %@)", next, error, completeBlock] userInfo:nil];
 		}
 		GRSubscriber *sub = [[GRSubscriber alloc] init];
 		sub.nextBlock = next;
 		sub.errorBlock = error;
-		sub.completeBlock = complete;
+		sub.completeBlock = completeBlock;
 		return self.subscribe(sub);
 	};
 }
