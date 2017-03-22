@@ -107,6 +107,8 @@
 		931D410B9F8ACB935883DF8C59F9C93E /* EXPMatchers+postNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = C9691418670BA21E662053D04865CD1B /* EXPMatchers+postNotification.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		93A747611E7B3AC70049E5F8 /* GRObservable.h in Headers */ = {isa = PBXBuildFile; fileRef = 93A7475F1E7B3AC70049E5F8 /* GRObservable.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		93A747621E7B3AC70049E5F8 /* GRObservable.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A747601E7B3AC70049E5F8 /* GRObservable.m */; };
+		93A747811E82EA680049E5F8 /* UIColor+HexColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 93A7477F1E82EA680049E5F8 /* UIColor+HexColor.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		93A747821E82EA680049E5F8 /* UIColor+HexColor.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A747801E82EA680049E5F8 /* UIColor+HexColor.m */; };
 		93E5EC661DD0EC0600D9FFF6 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 93E5EC651DD0EC0600D9FFF6 /* Logging.h */; };
 		94C47C87E397972CE98F75929F3B706C /* ExpectaObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2F6A3855E2A608C79EF52060C4ECB3A5 /* ExpectaObject.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		9668388923CC69C21843D39AAEA50F58 /* SPTCompiledExample.m in Sources */ = {isa = PBXBuildFile; fileRef = 49D6FE9238D27594C6ADF969BB631A7E /* SPTCompiledExample.m */; };
@@ -315,6 +317,8 @@
 		93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		93A7475F1E7B3AC70049E5F8 /* GRObservable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRObservable.h; sourceTree = "<group>"; };
 		93A747601E7B3AC70049E5F8 /* GRObservable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRObservable.m; sourceTree = "<group>"; };
+		93A7477F1E82EA680049E5F8 /* UIColor+HexColor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+HexColor.h"; sourceTree = "<group>"; };
+		93A747801E82EA680049E5F8 /* UIColor+HexColor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+HexColor.m"; sourceTree = "<group>"; };
 		93E5EC651DD0EC0600D9FFF6 /* Logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logging.h; sourceTree = "<group>"; };
 		9534F980F862F3439BFB9A5F458317C3 /* EXPMatchers+beLessThan.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "EXPMatchers+beLessThan.h"; path = "Expecta/Matchers/EXPMatchers+beLessThan.h"; sourceTree = "<group>"; };
 		96F11BDDC9C7E30042ACBB2D358C4EC3 /* Pods-GRFoundation_Tests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = "Pods-GRFoundation_Tests.modulemap"; sourceTree = "<group>"; };
@@ -625,6 +629,8 @@
 				93E5EC651DD0EC0600D9FFF6 /* Logging.h */,
 				93A7475F1E7B3AC70049E5F8 /* GRObservable.h */,
 				93A747601E7B3AC70049E5F8 /* GRObservable.m */,
+				93A7477F1E82EA680049E5F8 /* UIColor+HexColor.h */,
+				93A747801E82EA680049E5F8 /* UIColor+HexColor.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -820,6 +826,7 @@
 				EF48777E31E5B2EBE12DB6372ADE5480 /* GRFoundation.h in Headers */,
 				93E5EC661DD0EC0600D9FFF6 /* Logging.h in Headers */,
 				93A747611E7B3AC70049E5F8 /* GRObservable.h in Headers */,
+				93A747811E82EA680049E5F8 /* UIColor+HexColor.h in Headers */,
 				F8579C773A13DE5AB0C6E92B912B9687 /* LoadableCategory.h in Headers */,
 				19C9F250B8ADDC3E000B48E12B9B0480 /* UIDevice+Hardware.h in Headers */,
 				96B31EC8762AD59950ACA41FAE8F6AAF /* UIImage+ColorReplacement.h in Headers */,
@@ -1082,6 +1089,7 @@
 			files = (
 				BDEE4482F04DA913B5CACADE234A5BE9 /* GRFoundation-dummy.m in Sources */,
 				F0C48A61D9C6E296E8A1F946F83BA623 /* UIDevice+Hardware.m in Sources */,
+				93A747821E82EA680049E5F8 /* UIColor+HexColor.m in Sources */,
 				1CDD1D4F6D0FED61659F8BDDC177F91B /* UIImage+ColorReplacement.m in Sources */,
 				93A747621E7B3AC70049E5F8 /* GRObservable.m in Sources */,
 			);
