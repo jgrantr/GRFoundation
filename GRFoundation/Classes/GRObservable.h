@@ -39,6 +39,7 @@ typedef void (^GRObservableCompleteBlock)();
 
 + (instancetype) withBlock:(void (^)(id<GRObserver> observer))block;
 + (GRObservable* (^)(void (^)(id<GRObserver> observer)))observable;
++ (GRObservable*)observableFor:(id<NSObject>)object keyPath:(NSString *)keypath;
 
 - (GRSubscriber *(^)(id nextOrObservable))subscribe;
 - (GRSubscriber *(^)(GRObservableNextBlock, GRObservableErrorBlock, GRObservableCompleteBlock))subscribeWithLiterals;

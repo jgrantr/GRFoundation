@@ -15,7 +15,10 @@
 	GRObservable *obs2;
 	GRObservable *filter;
 	GRObservable *destroyQuickly;
+	GRObservable *kvoObservable;
 }
+
+@property (nonatomic, strong) NSString *testProperty;
 
 @end
 
@@ -103,6 +106,16 @@
 	});
 	
 	destroyQuickly = nil;
+	
+	kvoObservable = [GRObservable observableFor:self keyPath:@"testProperty"];
+	
+	kvoObservable.subscribe(^(NSDictionary<NSKeyValueChangeKey,id> *change) {
+		id newValue = change[NSKeyValueChangeNewKey];
+		NSLog(@"new value of 'testProperty' is '%@'", newValue);
+	});
+	
+	self.testProperty = @"Hello World!";
+	self.testProperty = @"KVO Observing is cool!";
 }
 
 - (void)didReceiveMemoryWarning

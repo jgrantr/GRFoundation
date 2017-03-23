@@ -29,6 +29,8 @@ static dispatch_queue_t _privateQ;
 
 @property (nonatomic, copy) void (^block)(id<GRObserver> observer);
 @property (nonatomic, weak) GRSubscriber *subscriptionToOtherObservable;
+@property (nonatomic, strong) id observing;
+@property (nonatomic, strong) NSString *keyPath;
 
 - (void) addSubscriber:(GRSubscriber *)subscriber;
 - (void) removeSubscriber:(GRSubscriber *)subscriber;
@@ -115,6 +117,30 @@ static dispatch_queue_t _privateQ;
 		return observable;
 	};
 }
++ (GRObservable* )observableFor:(id<NSObject>)object keyPath:(NSString *)keypath {
+	GRObservable *observable = [[GRObservable alloc] init];
+	observable.keyPath = keypath;
+	observable.observing = object;
+	return observable;
+}
+
+- (void) setObserving:(id)observing {
+	[_observing removeObserver:self forKeyPath:self.keyPath];
+	[self willChangeValueForKey:@"observing"];
+	_observing = observing;
+	[self didChangeValueForKey:@"observing"];
+	[observing addObserver:self forKeyPath:self.keyPath options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:(__bridge void * _Nullable)(self.keyPath)];
+}
+
+- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
+{
+	if (context == (__bridge void * _Nullable)(self.keyPath)) {
+		[self next:change];
+	}
+	else {
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+	}
+}
 
 - (id) init {
 	self = [super init];
@@ -130,6 +156,7 @@ static dispatch_queue_t _privateQ;
 		[self.subscriptionToOtherObservable unsubscribe];
 		self.subscriptionToOtherObservable = nil;
 	}
+	self.observing = nil;
 }
 
 - (void) addSubscriber:(GRSubscriber *)subscriber {
@@ -208,7 +235,7 @@ static dispatch_queue_t _privateQ;
 			toReturn = sub;
 		}
 		if (toReturn) [self addSubscriber:toReturn];
-		if (shouldExecuteBlock) {
+		if (shouldExecuteBlock && self.block) {
 			self.block(self);
 		}
 		return toReturn;
