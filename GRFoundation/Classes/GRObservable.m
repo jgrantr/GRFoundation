@@ -7,6 +7,12 @@
 //
 
 #import "GRObservable.h"
+#import "Logging.h"
+
+#undef LOG_LEVEL_DEF
+#define LOG_LEVEL_DEF GRSub_ddLogLevel
+
+static DDLogLevel GRSub_ddLogLevel = DDLogLevelInfo;
 
 #import <objc/runtime.h>
 
@@ -48,6 +54,15 @@ static dispatch_queue_t _privateQ;
 
 @implementation GRSubscriber
 
++ (DDLogLevel)ddLogLevel {
+	return GRSub_ddLogLevel;
+}
+
++ (void)ddSetLogLevel:(DDLogLevel)logLevel {
+	GRSub_ddLogLevel = logLevel;
+}
+
+
 + (GRSubscriber *) next:(void (^)(id value))next error:(void (^)(NSError *error))error complete:(void (^)())complete {
 	GRSubscriber *sub = [[GRSubscriber alloc] init];
 	sub.nextBlock = next;
@@ -69,7 +84,7 @@ static dispatch_queue_t _privateQ;
 }
 
 - (void) dealloc {
-	NSLog(@"dealloc of GRSubscriber<%p> called", self);
+	DDLogDebug(@"dealloc of GRSubscriber<%p> called", self);
 }
 
 - (void) next:(id)value {
@@ -98,7 +113,20 @@ static dispatch_queue_t _privateQ;
 
 @end
 
+#undef LOG_LEVEL_DEF
+#define LOG_LEVEL_DEF GRObs_ddLogLevel
+
+static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
+
 @implementation GRObservable
+
++ (DDLogLevel)ddLogLevel {
+	return GRObs_ddLogLevel;
+}
+
++ (void)ddSetLogLevel:(DDLogLevel)logLevel {
+	GRObs_ddLogLevel = logLevel;
+}
 
 + (void) load {
 	_privateQ = dispatch_queue_create("net.mr-r.GRObservable-private", NULL);
@@ -151,7 +179,7 @@ static dispatch_queue_t _privateQ;
 }
 
 - (void) dealloc {
-	NSLog(@"dealloc of GRObservable<%p> called", self);
+	DDLogDebug(@"dealloc of GRObservable<%p> called", self);
 	if (self.subscriptionToOtherObservable) {
 		[self.subscriptionToOtherObservable unsubscribe];
 		self.subscriptionToOtherObservable = nil;
