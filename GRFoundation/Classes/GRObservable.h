@@ -12,20 +12,19 @@ typedef void (^GRObservableNextBlock)(id value);
 typedef void (^GRObservableErrorBlock)(NSError *error);
 typedef void (^GRObservableCompleteBlock)();
 
-@protocol GRObserver <NSObject>
+@interface GRObserver<__covariant ObjectType> : NSObject
 
-@required
-- (void) next:(id)value;
+- (void) next:(ObjectType)value;
 - (void) error:(NSError *)error;
 - (void) complete;
 
 @end
 
-@interface GRSubscriber : NSObject <GRObserver>
+@interface GRSubscriber<__covariant ObjectType> : GRObserver<ObjectType>
 
-+ (GRSubscriber *) next:(void (^)(id value))next error:(void (^)(NSError *error))error complete:(void (^)())complete;
-+ (GRSubscriber *) next:(void (^)(id value))next error:(void (^)(NSError *error))error;
-+ (GRSubscriber *) next:(void (^)(id value))next;
++ (GRSubscriber *) next:(void (^)(ObjectType value))next error:(void (^)(NSError *error))error complete:(void (^)())complete;
++ (GRSubscriber *) next:(void (^)(ObjectType value))next error:(void (^)(NSError *error))error;
++ (GRSubscriber *) next:(void (^)(ObjectType value))next;
 
 - (void) unsubscribe;
 
@@ -35,14 +34,14 @@ typedef void (^GRObservableCompleteBlock)();
 #define __GRSubscribe(observable, _next, _error, _complete, ...) observable.subscribeWithLiterals(_next, _error, _complete)
 
 
-@interface GRObservable : NSObject
+@interface GRObservable<__covariant ObjectType> : NSObject
 
-+ (instancetype) withBlock:(void (^)(id<GRObserver> observer))block;
-+ (GRObservable* (^)(void (^)(id<GRObserver> observer)))observable;
-+ (GRObservable*)observableFor:(id<NSObject>)object keyPath:(NSString *)keypath;
++ (instancetype) withBlock:(void (^)(GRObserver* observer))block;
++ (GRObservable<ObjectType>* (^)(void (^)(GRObserver *observer)))observable;
++ (GRObservable<NSDictionary<NSKeyValueChangeKey,id> *>*)observableFor:(id<NSObject>)object keyPath:(NSString *)keypath;
 
-- (GRSubscriber *(^)(id nextOrObservable))subscribe;
-- (GRSubscriber *(^)(GRObservableNextBlock, GRObservableErrorBlock, GRObservableCompleteBlock))subscribeWithLiterals;
+- (GRSubscriber<ObjectType> *(^)(id nextOrObservable))subscribe;
+- (GRSubscriber<ObjectType> *(^)(void (^)(ObjectType value), GRObservableErrorBlock, GRObservableCompleteBlock))subscribeWithLiterals;
 
 /**
  * Returns a new observable that will emit values that are distinct from the previous value.  For example,
@@ -53,6 +52,6 @@ typedef void (^GRObservableCompleteBlock)();
  * If the object does not respond to the gr_isEqual: selector, the isEqual: selector will be used.
  *
  */
-- (GRObservable *(^)(BOOL (^)(id prev, id cur))) distinctUntilChanged;
+- (GRObservable<ObjectType> *(^)(BOOL (^)(ObjectType prev, ObjectType cur))) distinctUntilChanged;
 
 @end

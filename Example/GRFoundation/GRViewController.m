@@ -11,11 +11,11 @@
 
 @interface GRViewController ()
 {
-	GRObservable *observable;
-	GRObservable *obs2;
+	GRObservable<NSNumber*> *observable;
+	GRObservable<NSNumber*> *obs2;
 	GRObservable *filter;
 	GRObservable *destroyQuickly;
-	GRObservable *kvoObservable;
+	GRObservable<NSDictionary<NSKeyValueChangeKey,id> *> *kvoObservable;
 }
 
 @property (nonatomic, strong) NSString *testProperty;
@@ -29,7 +29,7 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
 	
-	observable = GRObservable.observable(^(id<GRObserver> observer) {
+	observable = GRObservable.observable(^(GRObserver<NSNumber*> *observer) {
 		[observer next:@(1)];
 		[observer next:@(2)];
 		[observer next:@(3)];
@@ -46,7 +46,7 @@
 		observable = nil;
 	});
 	
-	obs2 = GRObservable.observable(^(id<GRObserver> observer) {
+	obs2 = GRObservable.observable(^(GRObserver<NSNumber*> * observer) {
 		[observer next:@(1)];
 		[observer next:@(5)];
 		[observer next:@(10)];
@@ -61,7 +61,7 @@
 		obs2 = nil;
 	});
 	
-	filter = GRObservable.observable(^(id<GRObserver> observer) {
+	filter = GRObservable.observable(^(GRObserver<NSNumber*>* observer) {
 		[observer next:@(1)];
 		[observer next:@(1)];
 		[observer next:@(1)];
@@ -85,7 +85,7 @@
 		}
 	);
 	
-	destroyQuickly = GRObservable.observable(^(id<GRObserver> observer) {
+	destroyQuickly = GRObservable.observable(^(GRObserver<NSNumber*>* observer) {
 		[observer next:@(1)];
 		[observer next:@(1)];
 		[observer next:@(1)];
@@ -108,7 +108,7 @@
 	destroyQuickly = nil;
 	
 	kvoObservable = [GRObservable observableFor:self keyPath:@"testProperty"];
-	
+		
 	kvoObservable.subscribe(^(NSDictionary<NSKeyValueChangeKey,id> *change) {
 		id newValue = change[NSKeyValueChangeNewKey];
 		NSLog(@"new value of 'testProperty' is '%@'", newValue);
@@ -116,6 +116,7 @@
 	
 	self.testProperty = @"Hello World!";
 	self.testProperty = @"KVO Observing is cool!";
+	kvoObservable = nil;
 }
 
 - (void)didReceiveMemoryWarning

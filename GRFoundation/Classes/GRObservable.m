@@ -22,24 +22,103 @@ static dispatch_queue_t _privateQ;
 
 @interface GRSubscriber ()
 
-@property (nonatomic, weak) GRObservable *parent;
+@property (nonatomic, weak) GRObserver *parent;
 
 @end
 
-@interface GRObservable () <GRObserver>
+@interface GRObserver ()
 {
 	NSMutableArray <GRSubscriber *> *subscribers;
 	BOOL erroredOut;
 	BOOL complete;
 }
+- (void) addSubscriber:(GRSubscriber *)subscriber;
+- (void) removeSubscriber:(GRSubscriber *)subscriber;
 
-@property (nonatomic, copy) void (^block)(id<GRObserver> observer);
+@end
+
+@implementation GRObserver
+
+- (instancetype) init {
+	self = [super init];
+	if (self) {
+		subscribers = [NSMutableArray arrayWithCapacity:1];
+	}
+	return self;
+}
+
+- (void) addSubscriber:(GRSubscriber *)subscriber {
+	dispatch_sync(_privateQ, ^{
+		subscriber.parent = self;
+		[subscribers addObject:subscriber];
+	});
+}
+
+- (void) removeSubscriber:(GRSubscriber *)subscriber {
+	dispatch_sync(_privateQ, ^{
+		subscriber.parent = nil;
+		[subscribers removeObject:subscriber];
+	});
+}
+
+- (void) next:(id)value {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		__block NSArray *subCopy;
+		dispatch_sync(_privateQ, ^{
+			subCopy = [subscribers copy];
+		});
+		for (GRSubscriber *subscriber in subCopy) {
+			[subscriber next:value];
+		}
+	});
+}
+
+- (void) error:(NSError *)error {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		__block NSArray *subCopy;
+		dispatch_sync(_privateQ, ^{
+			subCopy = [subscribers copy];
+		});
+		for (GRSubscriber *subscriber in subCopy) {
+			[subscriber error:error];
+		}
+		erroredOut = YES;
+		dispatch_sync(_privateQ, ^{
+			[subscribers removeAllObjects];
+		});
+	});
+}
+
+- (void) complete {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if (!complete) {
+			__block NSArray *subCopy;
+			dispatch_sync(_privateQ, ^{
+				subCopy = [subscribers copy];
+			});
+			for (GRSubscriber *subscriber in subCopy) {
+				[subscriber complete];
+			}
+			complete = YES;
+			dispatch_sync(_privateQ, ^{
+				[subscribers removeAllObjects];
+			});
+		}
+	});
+}
+
+@end
+
+@interface GRObservable ()
+{
+	GRObserver *_observer;
+}
+
+@property (nonatomic, copy) void (^block)(GRObserver* observer);
 @property (nonatomic, weak) GRSubscriber *subscriptionToOtherObservable;
 @property (nonatomic, strong) id observing;
 @property (nonatomic, strong) NSString *keyPath;
 
-- (void) addSubscriber:(GRSubscriber *)subscriber;
-- (void) removeSubscriber:(GRSubscriber *)subscriber;
 
 @end
 
@@ -132,20 +211,20 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 	_privateQ = dispatch_queue_create("net.mr-r.GRObservable-private", NULL);
 }
 
-+ (instancetype) withBlock:(void (^)(id<GRObserver> observer))block {
++ (instancetype) withBlock:(void (^)(GRObserver* observer))block {
 	GRObservable *observable = [[GRObservable alloc] init];
 	observable.block = block;
 	return observable;
 }
 
-+ (GRObservable *(^)(void (^)(id<GRObserver> observer)))observable {
-	return ^GRObservable*(void (^observer)(id<GRObserver>)) {
++ (GRObservable<id> *(^)(void (^)(GRObserver* observer)))observable {
+	return ^GRObservable*(void (^observer)(GRObserver *)) {
 		GRObservable *observable = [[GRObservable alloc] init];
 		observable.block = observer;
 		return observable;
 	};
 }
-+ (GRObservable* )observableFor:(id<NSObject>)object keyPath:(NSString *)keypath {
++ (GRObservable<NSDictionary<NSKeyValueChangeKey,id>*> *)observableFor:(id<NSObject>)object keyPath:(NSString *)keypath {
 	GRObservable *observable = [[GRObservable alloc] init];
 	observable.keyPath = keypath;
 	observable.observing = object;
@@ -163,7 +242,7 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 - (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
 {
 	if (context == (__bridge void * _Nullable)(self.keyPath)) {
-		[self next:change];
+		[_observer next:change];
 	}
 	else {
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
@@ -173,7 +252,6 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 - (id) init {
 	self = [super init];
 	if (self) {
-		subscribers = [NSMutableArray arrayWithCapacity:1];
 	}
 	return self;
 }
@@ -185,72 +263,14 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 		self.subscriptionToOtherObservable = nil;
 	}
 	self.observing = nil;
+	_observer = nil;
 }
 
-- (void) addSubscriber:(GRSubscriber *)subscriber {
-	dispatch_sync(_privateQ, ^{
-		subscriber.parent = self;
-		[subscribers addObject:subscriber];
-	});
-}
-
-- (void) removeSubscriber:(GRSubscriber *)subscriber {
-	dispatch_sync(_privateQ, ^{
-		subscriber.parent = nil;
-		[subscribers removeObject:subscriber];
-	});
-}
-
-- (void) next:(id)value {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		__block NSArray *subCopy;
-		dispatch_sync(_privateQ, ^{
-			subCopy = [subscribers copy];
-		});
-		for (GRSubscriber *subscriber in subCopy) {
-			[subscriber next:value];
-		}
-	});
-}
-
-- (void) error:(NSError *)error {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		__block NSArray *subCopy;
-		dispatch_sync(_privateQ, ^{
-			subCopy = [subscribers copy];
-		});
-		for (GRSubscriber *subscriber in subCopy) {
-			[subscriber error:error];
-		}
-		erroredOut = YES;
-		dispatch_sync(_privateQ, ^{
-			[subscribers removeAllObjects];
-		});
-	});
-}
-
-- (void) complete {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		if (!complete) {
-			__block NSArray *subCopy;
-			dispatch_sync(_privateQ, ^{
-				subCopy = [subscribers copy];
-			});
-			for (GRSubscriber *subscriber in subCopy) {
-				[subscriber complete];
-			}
-			complete = YES;
-			dispatch_sync(_privateQ, ^{
-				[subscribers removeAllObjects];
-			});
-		}
-	});
-}
-
-- (GRSubscriber *(^)(id nextOrSubscriber))subscribe {
+- (GRSubscriber<id> *(^)(id nextOrSubscriber))subscribe {
 	return ^GRSubscriber*(id nextOrSubscriber) {
 		BOOL shouldExecuteBlock = NO;
-		if (subscribers.count == 0) {
+		if (!_observer) {
+			_observer = [[GRObserver alloc] init];
 			shouldExecuteBlock = YES;
 		}
 		GRSubscriber *toReturn = nil;
@@ -262,19 +282,20 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 			sub.nextBlock = nextOrSubscriber;
 			toReturn = sub;
 		}
-		if (toReturn) [self addSubscriber:toReturn];
+		if (toReturn) [_observer addSubscriber:toReturn];
 		if (shouldExecuteBlock && self.block) {
-			self.block(self);
+			self.block(_observer);
+			self.block = nil;
 		}
 		return toReturn;
 	};
 }
 
-- (GRSubscriber *(^)(GRObservableNextBlock, GRObservableErrorBlock, GRObservableCompleteBlock))subscribeWithLiterals
+- (GRSubscriber<id> *(^)(GRObservableNextBlock, GRObservableErrorBlock, GRObservableCompleteBlock))subscribeWithLiterals
 {
 	
 	return ^GRSubscriber*(GRObservableNextBlock next, GRObservableErrorBlock error, GRObservableCompleteBlock completeBlock) {
-		if (!next && !error && !complete) {
+		if (!next && !error && !completeBlock) {
 			@throw [NSException exceptionWithName:@"NSInternalConsistencyException" reason:[NSString stringWithFormat:@"subscribeWithLiterals requires at least 1 block (given next: %@, error: %@, complete %@)", next, error, completeBlock] userInfo:nil];
 		}
 		GRSubscriber *sub = [[GRSubscriber alloc] init];
@@ -285,12 +306,12 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 	};
 }
 
-- (GRObservable *(^)(BOOL (^)(id prev, id cur))) distinctUntilChanged {
+- (GRObservable<id> *(^)(BOOL (^)(id prev, id cur))) distinctUntilChanged {
 	return ^GRObservable*(BOOL (^comparisonBlock)(id prev, id current)) {
-		__block __weak id<GRObserver> observer = nil;
+		__block __weak GRObserver* observer = nil;
 		__block id prevValue = nil;
-		GRObservable *toReturn = GRObservable.observable(^(id<GRObserver> _observer) {
-			observer = _observer;
+		GRObservable *toReturn = GRObservable.observable(^(GRObserver* passedIn) {
+			observer = passedIn;
 		});
 		toReturn.subscriptionToOtherObservable = self.subscribeWithLiterals(^(id value) {
 			BOOL shouldPassAlong = NO;

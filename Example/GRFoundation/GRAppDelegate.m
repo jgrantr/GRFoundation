@@ -7,12 +7,28 @@
 //
 
 #import "GRAppDelegate.h"
+#import <CocoaLumberjack/CocoaLumberjack.h>
+#import <GRFoundation/GRFoundation.h>
 
 @implementation GRAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+	
+	if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_9_x_Max) {
+		[DDLog addLogger:[DDASLLogger sharedInstance]];
+	#if TARGET_IPHONE_SIMULATOR
+		[DDLog addLogger:[DDTTYLogger sharedInstance]];
+	#endif
+	}
+	else {
+		[DDLog addLogger:[DDTTYLogger sharedInstance]];
+		[DDLog addLogger:[DDASLLogger sharedInstance]];
+	}
+
+	[DDLog setLevel:DDLogLevelDebug forClass:[GRObservable class]];
+	
     return YES;
 }
 
