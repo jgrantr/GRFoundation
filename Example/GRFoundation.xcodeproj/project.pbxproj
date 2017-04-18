@@ -22,6 +22,7 @@
 		6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5B8195388D20070C39A /* InfoPlist.strings */; };
 		6003F5BC195388D20070C39A /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F5BB195388D20070C39A /* Tests.m */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
+		938206F81EA6908C0098690B /* mapping.json in Resources */ = {isa = PBXBuildFile; fileRef = 938206F71EA6908C0098690B /* mapping.json */; };
 		E2D81C35401135EF911C64FF /* Pods_GRFoundation_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB950AA77E3F2234127B0EC8 /* Pods_GRFoundation_Example.framework */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +62,7 @@
 		8CB5F054C1545851807CF4EC /* Pods_GRFoundation_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GRFoundation_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8FCDA20327F3B19180027CD7 /* Pods-GRFoundation_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GRFoundation_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-GRFoundation_Example/Pods-GRFoundation_Example.release.xcconfig"; sourceTree = "<group>"; };
 		90DD5C12920B473A67C42018 /* Pods-GRFoundation_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GRFoundation_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GRFoundation_Tests/Pods-GRFoundation_Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		938206F71EA6908C0098690B /* mapping.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = mapping.json; sourceTree = "<group>"; };
 		AF5BD8BB2FB743CB033333A4 /* GRFoundation.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = GRFoundation.podspec; path = ../GRFoundation.podspec; sourceTree = "<group>"; };
 		CB950AA77E3F2234127B0EC8 /* Pods_GRFoundation_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GRFoundation_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E093CAD00327DAA6001B67CC /* Pods-GRFoundation_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GRFoundation_Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-GRFoundation_Tests/Pods-GRFoundation_Tests.release.xcconfig"; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 				6003F5A6195388D20070C39A /* GRViewController.m */,
 				6003F5A8195388D20070C39A /* Images.xcassets */,
 				6003F594195388D20070C39A /* Supporting Files */,
+				938206F71EA6908C0098690B /* mapping.json */,
 			);
 			name = "Example for GRFoundation";
 			path = GRFoundation;
@@ -276,6 +279,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				938206F81EA6908C0098690B /* mapping.json in Resources */,
 				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
 				6003F5A9195388D20070C39A /* Images.xcassets in Resources */,
 				6003F598195388D20070C39A /* InfoPlist.strings in Resources */,

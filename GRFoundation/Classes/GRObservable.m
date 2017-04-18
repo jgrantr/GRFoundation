@@ -211,13 +211,13 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 	_privateQ = dispatch_queue_create("net.mr-r.GRObservable-private", NULL);
 }
 
-+ (instancetype) withBlock:(void (^)(GRObserver* observer))block {
++ (GRObservable<id>*) withBlock:(void (^)(GRObserver<id>* observer))block {
 	GRObservable *observable = [[GRObservable alloc] init];
 	observable.block = block;
 	return observable;
 }
 
-+ (GRObservable<id> *(^)(void (^)(GRObserver* observer)))observable {
++ (GRObservable<id> *(^)(void (^)(GRObserver<id>* observer)))observable {
 	return ^GRObservable*(void (^observer)(GRObserver *)) {
 		GRObservable *observable = [[GRObservable alloc] init];
 		observable.block = observer;

@@ -1,0 +1,28 @@
+{
+	"boolVar" : true,
+	"intVar" : 10,
+	"integerVar" : 20,
+	"numberVar" : 30,
+	"stringVar" : "Hello World!",
+	"structVar" : {
+		"pot" : 1,
+		"lady" : 2
+	},
+	"structTypeVar" : {
+		"pot" : 3,
+		"lady" : 4
+	},
+	"customClassVar" : {
+		"stringVar" : "Looking Good, World!",
+		"favoritePeople" : {
+			"my wife" : true,
+			"my kids" : true,
+			"tax collectors" : false
+		},
+		"favoriteColors" : [
+			"blue",
+			"white",
+			"green"
+		]
+	}
+}

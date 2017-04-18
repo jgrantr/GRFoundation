@@ -36,8 +36,8 @@ typedef void (^GRObservableCompleteBlock)();
 
 @interface GRObservable<__covariant ObjectType> : NSObject
 
-+ (instancetype) withBlock:(void (^)(GRObserver* observer))block;
-+ (GRObservable<ObjectType>* (^)(void (^)(GRObserver *observer)))observable;
++ (instancetype) withBlock:(void (^)(GRObserver<ObjectType>* observer))block;
++ (GRObservable<ObjectType>* (^)(void (^)(GRObserver<ObjectType> *observer)))observable;
 + (GRObservable<NSDictionary<NSKeyValueChangeKey,id> *>*)observableFor:(id<NSObject>)object keyPath:(NSString *)keypath;
 
 - (GRSubscriber<ObjectType> *(^)(id nextOrObservable))subscribe;
