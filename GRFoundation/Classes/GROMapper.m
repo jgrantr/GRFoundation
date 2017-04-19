@@ -14,6 +14,7 @@
 #define PROPERTY_MAP_PREFIX @"GROMapperPropertyFor_"
 #define ARRAY_CLASS_PREFIX @"GROMapperArrayClassFor_"
 #define CONVERTER_BLOCK_PREFIX @"GROMapperConvertBlockFor_"
+#define CUSTOM_MAPPING_PREFIX @"GROMapperCustomMappingBlockFor"
 
 typedef NS_ENUM(NSInteger, GROJsonType) {
 	GROJsonTypeUnknown,
@@ -111,6 +112,16 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 
 @implementation GROMapper
 
+@synthesize ignoreNulls;
+
+- (instancetype) init {
+	self = [super init];
+	if (self) {
+		ignoreNulls = YES;
+	}
+	return self;
+}
+
 + (instancetype) mapper {
 	return [[GROMapper alloc] init];
 }
@@ -165,8 +176,25 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 
 - (void) map:(NSDictionary <NSString*,id> *)source toObject:(id)target {
 	Class targetClass = [target class];
+	id nullInstance = [NSNull null];
 	for (NSString *key in source.allKeys) {
 		@autoreleasepool {
+			id origValue = source[key];
+			if (ignoreNulls && origValue == nullInstance) {
+				// we will ignore it at the end, short-circuit the whole process and move on
+				continue;
+			}
+			SEL customMappingSelector = NSSelectorFromString([CUSTOM_MAPPING_PREFIX stringByAppendingString:key]);
+			if (class_respondsToSelector(targetClass, customMappingSelector)) {
+				IMP imp = class_getMethodImplementation(targetClass, customMappingSelector);
+				id (*func)(id, SEL) = (void *)imp;
+				void (^customMappingBlock)(id original) = func(target, customMappingSelector);
+				if (customMappingBlock) {
+					customMappingBlock(origValue);
+					continue;
+				}
+
+			}
 			// first, grab the property using only the key
 			NSString *propertyName = key;
 			objc_property_t property = class_getProperty(targetClass, key.UTF8String);
@@ -184,7 +212,6 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 				// if there is no property, ignore it and move on.
 				continue;
 			}
-			id origValue = source[key];
 			id actualValue = origValue;
 			SEL conversionSelector = NSSelectorFromString([CONVERTER_BLOCK_PREFIX stringByAppendingString:key]);
 			if (class_respondsToSelector(targetClass, conversionSelector)) {
@@ -230,14 +257,13 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 						[self map:actualValue toArray:valueToSet withClass:arrayClass];
 					}
 					else {
-						// do nothing - it is an array of basic types (or should be)
+						// do nothing - it is an array of basic (or wrapped) types (or should be)
 						valueToSet = actualValue;
 					}
 					break;
 				}
 				case GROTargetTypeBasicOrWrappedValue:
 				{
-					valueToSet = actualValue;
 					break;
 				}
 			}

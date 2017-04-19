@@ -16,7 +16,11 @@
 
 #define GROConvertValue(key, block) -(id(^)(id)) GROMapperConvertBlockFor_##key { return block; }
 
+#define GROCustomMapping(key, block) -(void(^)(id)) GROMapperCustomMappingBlockFor_##key { return block; }
+
 @interface GROMapper : NSObject
+
+@property (nonatomic) BOOL ignoreNulls;
 
 + (instancetype) mapper;
 
