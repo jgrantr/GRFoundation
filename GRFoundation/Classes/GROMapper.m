@@ -14,7 +14,7 @@
 #define PROPERTY_MAP_PREFIX @"GROMapperPropertyFor_"
 #define ARRAY_CLASS_PREFIX @"GROMapperArrayClassFor_"
 #define CONVERTER_BLOCK_PREFIX @"GROMapperConvertBlockFor_"
-#define CUSTOM_MAPPING_PREFIX @"GROMapperCustomMappingBlockFor"
+#define CUSTOM_MAPPING_PREFIX @"GROMapperCustomMappingBlockFor_"
 
 typedef NS_ENUM(NSInteger, GROJsonType) {
 	GROJsonTypeUnknown,
