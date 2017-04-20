@@ -264,6 +264,7 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 				}
 				case GROTargetTypeBasicOrWrappedValue:
 				{
+					valueToSet = actualValue;
 					break;
 				}
 			}
