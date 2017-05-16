@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+// mapping macros for dict -> object
+
 #define GROMap(key, property) XGROMap(key, property)
 #define XGROMap(key, property) -(NSString*) GROMapperPropertyFor_##key { return @#property; }
 

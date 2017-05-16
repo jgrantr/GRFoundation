@@ -234,6 +234,7 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 						// we have a custom object (aka a dict) and the property we are setting has no class
 						// which means it is either a block or a primitive type, no mapping is therefore possible
 						DDLogWarn(@"cannot map value of type '%@' to a block or primitive type for property %@", NSStringFromClass([actualValue class]), propertyName);
+						continue;
 					}
 					else if ([actualValue isKindOfClass:propertyClass]) {
 						// the value we are setting matches the property's class, just do a direct set
@@ -268,7 +269,9 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 					break;
 				}
 			}
-			[target setValue:valueToSet forKey:propertyName];
+			if (valueToSet || !ignoreNulls) {
+				[target setValue:valueToSet forKey:propertyName];
+			}
 		}
 	}
 }

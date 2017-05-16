@@ -16,5 +16,6 @@
 #import <GRFoundation/GRJson.h>
 #import <GRFoundation/GRJsonParser.h>
 #import <GRFoundation/GROMapper.h>
+#import <GRFoundation/GRURLBuilder.h>
 
 #endif /* GRFoundation_h */

@@ -196,6 +196,7 @@ GROConvertValue(structTypeVar, ^id(NSDictionary *dict){
 		[observer error:[NSError errorWithDomain:@"MyErrorDomain" code:-1 userInfo:@{NSLocalizedDescriptionKey: @"my error"}]];
 		[observer complete];
 	});
+	observable.name = @"observable";
 	GRSubscribe(observable, ^(id value) {
 		NSLog(@"%@", value);
 	}, ^(NSError *error) {
@@ -212,6 +213,7 @@ GROConvertValue(structTypeVar, ^id(NSDictionary *dict){
 		[observer next:@(10)];
 		[observer complete];
 	});
+	obs2.name = @"obs2";
 	
 	GRSubscribe(obs2, ^(id value) {
 		NSLog(@"%@", value);
@@ -232,6 +234,7 @@ GROConvertValue(structTypeVar, ^id(NSDictionary *dict){
 		[observer next:@(3)];
 		[observer complete];
 	}).distinctUntilChanged(nil);
+	filter.name = @"filter";
 	
 	GRSubscribe(filter,
 		^(id value) {
@@ -256,9 +259,33 @@ GROConvertValue(structTypeVar, ^id(NSDictionary *dict){
 		[observer next:@(3)];
 		[observer complete];
 	}).distinctUntilChanged(nil);
+	destroyQuickly.name = @"destroyQuickly(sync)";
 	
 	GRSubscribe(destroyQuickly, ^(id value) {
-		NSLog(@"destroyQuickly: %@", value);
+		NSLog(@"destroyQuickly(sync): %@", value);
+	}, ^(NSError *error) {
+		NSLog(@"error: %@", error);
+	}, ^{
+		NSLog(@"complete");
+	});
+	
+	destroyQuickly = nil;
+	
+	destroyQuickly = [GRObservable withBlock:^(GRObserver *observer) {
+		[observer next:@(1)];
+		[observer next:@(1)];
+		[observer next:@(1)];
+		[observer next:@(2)];
+		[observer next:@(2)];
+		[observer next:@(2)];
+		[observer next:@(1)];
+		[observer next:@(3)];
+		[observer complete];
+	}].distinctUntilChanged(nil);
+	destroyQuickly.name = @"destroyQuickly(async)";
+	destroyQuickly.asynchronous = YES;
+	destroyQuickly.subscribeWithLiterals(^(NSNumber *value) {
+		NSLog(@"destroyQuickly(async): %@", value);
 	}, ^(NSError *error) {
 		NSLog(@"error: %@", error);
 	}, ^{
@@ -268,6 +295,7 @@ GROConvertValue(structTypeVar, ^id(NSDictionary *dict){
 	destroyQuickly = nil;
 	
 	kvoObservable = [GRObservable observableFor:self keyPath:@"testProperty"];
+	kvoObservable.name = @"kvoObservable(testProperty)";
 		
 	kvoObservable.subscribe(^(NSDictionary<NSKeyValueChangeKey,id> *change) {
 		id newValue = change[NSKeyValueChangeNewKey];
@@ -277,6 +305,7 @@ GROConvertValue(structTypeVar, ^id(NSDictionary *dict){
 	self.testProperty = @"Hello World!";
 	self.testProperty = @"KVO Observing is cool!";
 	kvoObservable = nil;
+	self.testProperty = @"Unobserved";
 		
 	NSData *mapperData = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"mapping" withExtension:@"json"]];
 	NSError *error = nil;

@@ -40,6 +40,10 @@ typedef void (^GRObservableCompleteBlock)();
 + (GRObservable<ObjectType>* (^)(void (^)(GRObserver<ObjectType> *observer)))observable;
 + (GRObservable<NSDictionary<NSKeyValueChangeKey,id> *>*)observableFor:(id<NSObject>)object keyPath:(NSString *)keypath;
 
+@property (nonatomic) BOOL asynchronous;
+@property (nonatomic, strong) dispatch_queue_t dispatchQueue;
+@property (nonatomic, strong) NSString *name;
+
 - (GRSubscriber<ObjectType> *(^)(id nextOrObservable))subscribe;
 - (GRSubscriber<ObjectType> *(^)(void (^)(ObjectType value), GRObservableErrorBlock, GRObservableCompleteBlock))subscribeWithLiterals;
 

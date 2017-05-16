@@ -31,7 +31,13 @@ static dispatch_queue_t _privateQ;
 	NSMutableArray <GRSubscriber *> *subscribers;
 	BOOL erroredOut;
 	BOOL complete;
+	BOOL isMainQueue;
 }
+
+@property (nonatomic) BOOL asynchronous;
+@property (nonatomic, strong) dispatch_queue_t dispatchQueue;
+
+
 - (void) addSubscriber:(GRSubscriber *)subscriber;
 - (void) removeSubscriber:(GRSubscriber *)subscriber;
 
@@ -43,8 +49,19 @@ static dispatch_queue_t _privateQ;
 	self = [super init];
 	if (self) {
 		subscribers = [NSMutableArray arrayWithCapacity:1];
+		isMainQueue == (self.dispatchQueue == nil || self.dispatchQueue == dispatch_get_main_queue());
 	}
 	return self;
+}
+
+- (void) setDispatchQueue:(dispatch_queue_t)dispatchQueue {
+	[self willChangeValueForKey:@"dispatchQueue"];
+	_dispatchQueue = dispatchQueue;
+	[self didChangeValueForKey:@"dispatchQueue"];
+	isMainQueue == (dispatchQueue == nil || dispatchQueue == dispatch_get_main_queue());
+	if (!isMainQueue && dispatchQueue) {
+		dispatch_queue_set_specific(dispatchQueue, (__bridge void *)self, (__bridge void *)self, nil);
+	}
 }
 
 - (void) addSubscriber:(GRSubscriber *)subscriber {
@@ -61,8 +78,24 @@ static dispatch_queue_t _privateQ;
 	});
 }
 
+- (void) runOnQueue:(void (^)())block {
+	if (self.asynchronous) {
+		dispatch_async(self.dispatchQueue?:dispatch_get_main_queue(), block);
+	}
+	else if (isMainQueue && [NSThread isMainThread]) {
+		block();
+	}
+	else if (dispatch_get_specific((__bridge void *)self) == (__bridge void *)self) {
+		block();
+	}
+	else {
+		// if self.asynchronous is NO, we will still dispatch asynchronously if we aren't on the correct queue
+		dispatch_async(self.dispatchQueue, block);
+	}
+}
+
 - (void) next:(id)value {
-	dispatch_async(dispatch_get_main_queue(), ^{
+	[self runOnQueue:^{
 		__block NSArray *subCopy;
 		dispatch_sync(_privateQ, ^{
 			subCopy = [subscribers copy];
@@ -70,11 +103,11 @@ static dispatch_queue_t _privateQ;
 		for (GRSubscriber *subscriber in subCopy) {
 			[subscriber next:value];
 		}
-	});
+	}];
 }
 
 - (void) error:(NSError *)error {
-	dispatch_async(dispatch_get_main_queue(), ^{
+	[self runOnQueue:^{
 		__block NSArray *subCopy;
 		dispatch_sync(_privateQ, ^{
 			subCopy = [subscribers copy];
@@ -86,11 +119,11 @@ static dispatch_queue_t _privateQ;
 		dispatch_sync(_privateQ, ^{
 			[subscribers removeAllObjects];
 		});
-	});
+	}];
 }
 
 - (void) complete {
-	dispatch_async(dispatch_get_main_queue(), ^{
+	[self runOnQueue:^{
 		if (!complete) {
 			__block NSArray *subCopy;
 			dispatch_sync(_privateQ, ^{
@@ -104,7 +137,7 @@ static dispatch_queue_t _privateQ;
 				[subscribers removeAllObjects];
 			});
 		}
-	});
+	}];
 }
 
 @end
@@ -163,7 +196,7 @@ static dispatch_queue_t _privateQ;
 }
 
 - (void) dealloc {
-	DDLogDebug(@"dealloc of GRSubscriber<%p> called", self);
+	DDLogDebug(@"dealloc of GRSubscriber<%p>(%@) called", self);
 }
 
 - (void) next:(id)value {
@@ -252,12 +285,14 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 - (id) init {
 	self = [super init];
 	if (self) {
+		self.asynchronous = NO;
+		self.dispatchQueue = dispatch_get_main_queue();
 	}
 	return self;
 }
 
 - (void) dealloc {
-	DDLogDebug(@"dealloc of GRObservable<%p> called", self);
+	DDLogDebug(@"dealloc of GRObservable<%p> (%@) called", self, self.name);
 	if (self.subscriptionToOtherObservable) {
 		[self.subscriptionToOtherObservable unsubscribe];
 		self.subscriptionToOtherObservable = nil;
@@ -271,6 +306,8 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 		BOOL shouldExecuteBlock = NO;
 		if (!_observer) {
 			_observer = [[GRObserver alloc] init];
+			_observer.asynchronous = self.asynchronous;
+			_observer.dispatchQueue = self.dispatchQueue;
 			shouldExecuteBlock = YES;
 		}
 		GRSubscriber *toReturn = nil;
@@ -312,41 +349,41 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 		__block id prevValue = nil;
 		GRObservable *toReturn = GRObservable.observable(^(GRObserver* passedIn) {
 			observer = passedIn;
-		});
-		toReturn.subscriptionToOtherObservable = self.subscribeWithLiterals(^(id value) {
-			BOOL shouldPassAlong = NO;
-			if (prevValue == nil) {
-				shouldPassAlong = YES;
-			}
-			else if (comparisonBlock) {
-				shouldPassAlong = (comparisonBlock(prevValue, value) == NO);
-			}
-			else {
-				if ([prevValue respondsToSelector:@selector(gr_isEqual:)]) {
-					shouldPassAlong = ([prevValue gr_isEqual:value] == NO);
+			toReturn.subscriptionToOtherObservable = self.subscribeWithLiterals(^(id value) {
+				BOOL shouldPassAlong = NO;
+				if (prevValue == nil) {
+					shouldPassAlong = YES;
+				}
+				else if (comparisonBlock) {
+					shouldPassAlong = (comparisonBlock(prevValue, value) == NO);
 				}
 				else {
-					shouldPassAlong = ([prevValue isEqual:value] == NO);
+					if ([prevValue respondsToSelector:@selector(gr_isEqual:)]) {
+						shouldPassAlong = ([prevValue gr_isEqual:value] == NO);
+					}
+					else {
+						shouldPassAlong = ([prevValue isEqual:value] == NO);
+					}
 				}
+				
+				if (shouldPassAlong) {
+					[observer next:value];
+					prevValue = value;
+				}
+				
+			}, ^(NSError *error) {
+				[observer error:error];
+				observer = nil;
+				prevValue = nil;
+			}, ^{
+				[observer complete];
+				observer = nil;
+				prevValue = nil;
+			});
+			if (observer) {
+				objc_setAssociatedObject(toReturn, &associatedObserverKey, observer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 			}
-			
-			if (shouldPassAlong) {
-				[observer next:value];
-				prevValue = value;
-			}
-			
-		}, ^(NSError *error) {
-			[observer error:error];
-			observer = nil;
-			prevValue = nil;
-		}, ^{
-			[observer complete];
-			observer = nil;
-			prevValue = nil;
 		});
-		if (observer) {
-			objc_setAssociatedObject(toReturn, &associatedObserverKey, observer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-		}
 		return toReturn;
 	};
 }
