@@ -49,7 +49,7 @@ static dispatch_queue_t _privateQ;
 	self = [super init];
 	if (self) {
 		subscribers = [NSMutableArray arrayWithCapacity:1];
-		isMainQueue == (self.dispatchQueue == nil || self.dispatchQueue == dispatch_get_main_queue());
+		isMainQueue = (self.dispatchQueue == nil || self.dispatchQueue == dispatch_get_main_queue());
 	}
 	return self;
 }
@@ -58,7 +58,7 @@ static dispatch_queue_t _privateQ;
 	[self willChangeValueForKey:@"dispatchQueue"];
 	_dispatchQueue = dispatchQueue;
 	[self didChangeValueForKey:@"dispatchQueue"];
-	isMainQueue == (dispatchQueue == nil || dispatchQueue == dispatch_get_main_queue());
+	isMainQueue = (dispatchQueue == nil || dispatchQueue == dispatch_get_main_queue());
 	if (!isMainQueue && dispatchQueue) {
 		dispatch_queue_set_specific(dispatchQueue, (__bridge void *)self, (__bridge void *)self, nil);
 	}
@@ -196,7 +196,7 @@ static dispatch_queue_t _privateQ;
 }
 
 - (void) dealloc {
-	DDLogDebug(@"dealloc of GRSubscriber<%p>(%@) called", self);
+	DDLogDebug(@"dealloc of GRSubscriber<%p> called", self);
 }
 
 - (void) next:(id)value {
@@ -347,7 +347,8 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 	return ^GRObservable*(BOOL (^comparisonBlock)(id prev, id current)) {
 		__block __weak GRObserver* observer = nil;
 		__block id prevValue = nil;
-		GRObservable *toReturn = GRObservable.observable(^(GRObserver* passedIn) {
+		__block GRObservable *toReturn = nil;
+		toReturn = GRObservable.observable(^(GRObserver* passedIn) {
 			observer = passedIn;
 			toReturn.subscriptionToOtherObservable = self.subscribeWithLiterals(^(id value) {
 				BOOL shouldPassAlong = NO;
