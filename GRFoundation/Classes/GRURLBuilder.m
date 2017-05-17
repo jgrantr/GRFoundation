@@ -98,7 +98,7 @@ static NSMutableDictionary * parseArgs(NSString *queryString) {
 			else {
 				value = [obj description];
 			}
-			[params setObject:[obj description] forKey:key];
+			[params setObject:value forKey:key];
 		}
 		else if (key && obj == nil) {
 			[params removeObjectForKey:key];
@@ -117,6 +117,15 @@ static NSMutableDictionary * parseArgs(NSString *queryString) {
 	for (NSString *key in dict) {
 		[params setObject:[[dict objectForKey:key] description] forKey:key];
 	}
+}
+
+- (NSUInteger) countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id  _Nullable __unsafe_unretained [])buffer count:(NSUInteger)len
+{
+	return [params countByEnumeratingWithState:state objects:buffer count:len];
+}
+
+- (void) enumerateKeysAndObjectsUsingBlock:(void (^)(NSString *, id, BOOL *))block {
+	[params enumerateKeysAndObjectsUsingBlock:block];
 }
 
 - (NSString *) urlString {

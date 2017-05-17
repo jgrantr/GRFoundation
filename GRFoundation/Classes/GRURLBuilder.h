@@ -9,7 +9,7 @@
 
 @class GRURLBuilder;
 
-@interface GRURLBuilder : NSObject
+@interface GRURLBuilder : NSObject <NSFastEnumeration>
 
 + (GRURLBuilder *) builder;
 + (GRURLBuilder *) builderWithBuilder:(GRURLBuilder *)builder;
@@ -20,7 +20,9 @@
 - (void) addDictionary:(NSDictionary *)dict;
 // use the new subscripting operators to add objects, like so:
 // builder[@"myKey"] = myValue;
-- (id) objectForKeyedSubscript:(id <NSCopying>)key;
-- (void)setObject:(id)obj forKeyedSubscript:(id <NSCopying>)key;
+- (id) objectForKeyedSubscript:(NSString *)key;
+- (void)setObject:(id)obj forKeyedSubscript:(NSString *)key;
+
+- (void)enumerateKeysAndObjectsUsingBlock:(void (NS_NOESCAPE ^)(NSString *key, id obj, BOOL *stop))block;
 
 @end
