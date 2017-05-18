@@ -8,6 +8,25 @@
 
 #import <Foundation/Foundation.h>
 
+extern NSString *GROMapperErrorDomain;
+
+typedef NS_ENUM(NSInteger, GROMapperErrorCode) {
+	GROMapperErrorCodeUnknown,
+	GROMapperErrorCodeSourceJSONIsNil,
+	GROMapperErrorCodeMappingClassIsNil,
+	GROMapperErrorCodeInvalidRootJSONObject,
+	GROMapperErrorCodeSourceArrayIsNil,
+	GROMapperErrorCodeTargetArrayIsNil,
+	GROMapperErrorCodeCouldNotCreateInstanceOfMappedClass,
+	/** The error that is thrown when a key value coding operation fails. The error's user info dictionary will contain at least two entries:
+	 - @"NSTargetObjectUserInfoKey": the receiver of the failed KVC message.
+	 - @"NSUnknownUserInfoKey": the key that was used in the failed KVC message.
+	 
+	 */
+	GROMapperErrorCodeNotKeyValueCodingCompliant,
+	GROMapperErrorCodeGeneralError,
+};
+
 // mapping macros for dict -> object
 
 #define GROMap(key, property) XGROMap(key, property)

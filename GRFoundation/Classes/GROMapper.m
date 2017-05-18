@@ -11,6 +11,9 @@
 
 #import "Logging.h"
 
+NSString *GROMapperErrorDomain = @"net.mr-r.GROMapper";
+
+
 #define PROPERTY_MAP_PREFIX @"GROMapperPropertyFor_"
 #define ARRAY_CLASS_PREFIX @"GROMapperArrayClassFor_"
 #define CONVERTER_BLOCK_PREFIX @"GROMapperConvertBlockFor_"
@@ -71,7 +74,7 @@ static NSError * errorWithCodeAndDescription(NSInteger code, NSString *format, .
 	NSString *str = [[NSString alloc] initWithFormat:format arguments:varArgs];
 	va_end(varArgs);
 	
-	return [NSError errorWithDomain:@"GROMapper" code:code userInfo:@{NSLocalizedDescriptionKey: str}];
+	return [NSError errorWithDomain:GROMapperErrorDomain code:code userInfo:@{NSLocalizedDescriptionKey: str}];
 }
 
 static Class classForProperty(objc_property_t property) {
@@ -133,8 +136,8 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 - (id) mapSource:(id)source to:(Class)clazz error:(NSError *__autoreleasing *)error {
 	id rootObj = nil;
 	@try {
-		if (source == nil) @throw errorWithCodeAndDescription(-1, @"source JSON object is nil");
-		if (clazz == nil) @throw errorWithCodeAndDescription(-2, @"Class to map to cannot be nil");
+		if (source == nil) @throw errorWithCodeAndDescription(GROMapperErrorCodeSourceJSONIsNil, @"source JSON object is nil");
+		if (clazz == nil) @throw errorWithCodeAndDescription(GROMapperErrorCodeMappingClassIsNil, @"Class to map to cannot be nil");
 		switch (jsonType(source)) {
 			case GROJsonTypeUnknown:
 				break;
@@ -161,14 +164,30 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 			case GROJsonTypeString:
 			case GROJsonTypeTypeNumber:
 			case GROJsonTypeNull:
-				@throw errorWithCodeAndDescription(-3, @"Cannot map a JSON basic type (string, number, etc).  Root of the JSON must be an array or object.");
+				@throw errorWithCodeAndDescription(GROMapperErrorCodeInvalidRootJSONObject, @"Cannot map a JSON basic type (string, number, etc).  Root of the JSON must be an array or object.");
 		}
 	} @catch (NSError *thrown) {
 		if (error) {
 			*error = thrown;
 		}
 		rootObj = nil;
-	} @finally {
+	} @catch (NSException *exception) {
+		NSError *toRaise = nil;
+		if ([exception.name isEqualToString:NSUndefinedKeyException]) {
+			NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:exception.userInfo];
+			userInfo[NSLocalizedDescriptionKey] = exception.reason;
+			toRaise = [NSError errorWithDomain:GROMapperErrorDomain code:GROMapperErrorCodeNotKeyValueCodingCompliant userInfo:userInfo];
+		}
+		else {
+			NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:exception.userInfo];
+			userInfo[NSLocalizedDescriptionKey] = exception.reason;
+			toRaise = [NSError errorWithDomain:GROMapperErrorDomain code:GROMapperErrorCodeGeneralError userInfo:userInfo];
+		}
+		if (error) {
+			*error = toRaise;
+		}
+		rootObj = nil;
+	}@finally {
 		
 	}
 	return rootObj;
@@ -277,11 +296,11 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 }
 
 - (void) map:(NSArray *)source toArray:(NSMutableArray *)array withClass:(Class)clazz {
-	if (source == nil) @throw errorWithCodeAndDescription(-5, @"source array is nil");
-	if (array == nil) @throw errorWithCodeAndDescription(-6, @"target array is nil");
+	if (source == nil) @throw errorWithCodeAndDescription(GROMapperErrorCodeSourceArrayIsNil, @"source array is nil");
+	if (array == nil) @throw errorWithCodeAndDescription(GROMapperErrorCodeTargetArrayIsNil, @"target array is nil");
 	for (id item in source) {
 		id targetItem = [[clazz alloc] init];
-		if (!targetItem) @throw errorWithCodeAndDescription(-7, @"could not create object from class: %@", clazz);
+		if (!targetItem) @throw errorWithCodeAndDescription(GROMapperErrorCodeCouldNotCreateInstanceOfMappedClass, @"could not create object from class: %@", clazz);
 		[array addObject:targetItem];
 		[self map:item toObject:targetItem];
 	}
