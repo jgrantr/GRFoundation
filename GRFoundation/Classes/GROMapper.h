@@ -49,4 +49,6 @@ typedef NS_ENUM(NSInteger, GROMapperErrorCode) {
 
 - (id) mapSource:(id)object to:(Class)clazz error:(NSError *__autoreleasing *)error;
 
+- (void) map:(NSDictionary <NSString*,id> *)source toObject:(id)target;
+
 @end
