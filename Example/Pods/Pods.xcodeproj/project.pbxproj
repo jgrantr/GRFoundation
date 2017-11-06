@@ -105,6 +105,8 @@
 		918E06480F28F27361B19D19432F8538 /* EXPMatchers+endWith.m in Sources */ = {isa = PBXBuildFile; fileRef = 2022BD5D54585F31BF16300DE8D1B47F /* EXPMatchers+endWith.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		9274C451D9A242981D3F568B47BE04A5 /* DDASLLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 3F6ABE15DAE3F9143B95950F0E9BD4C2 /* DDASLLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		931D410B9F8ACB935883DF8C59F9C93E /* EXPMatchers+postNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = C9691418670BA21E662053D04865CD1B /* EXPMatchers+postNotification.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		931EAD271FB1005C00DBFEFC /* GRReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 931EAD251FB1005C00DBFEFC /* GRReachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		931EAD281FB1005C00DBFEFC /* GRReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 931EAD261FB1005C00DBFEFC /* GRReachability.m */; };
 		938206F31EA531D60098690B /* GRJson.h in Headers */ = {isa = PBXBuildFile; fileRef = 938206F11EA531D60098690B /* GRJson.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		938206F41EA531D60098690B /* GRJson.m in Sources */ = {isa = PBXBuildFile; fileRef = 938206F21EA531D60098690B /* GRJson.m */; };
 		938206FB1EA6B7250098690B /* GRJsonParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 938206F91EA6B7250098690B /* GRJsonParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -322,6 +324,8 @@
 		8FEB9789F9849E072A22CF47D68B8705 /* SPTExcludeGlobalBeforeAfterEach.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = SPTExcludeGlobalBeforeAfterEach.h; path = Specta/Specta/SPTExcludeGlobalBeforeAfterEach.h; sourceTree = "<group>"; };
 		9046F7C522783F2960CBF5D9F62B9514 /* Pods-GRFoundation_Tests-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-GRFoundation_Tests-umbrella.h"; sourceTree = "<group>"; };
 		9092C4A9BFB65AB6153FFC3D7BB55ABA /* DDASLLogCapture.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = DDASLLogCapture.m; path = Classes/DDASLLogCapture.m; sourceTree = "<group>"; };
+		931EAD251FB1005C00DBFEFC /* GRReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRReachability.h; sourceTree = "<group>"; };
+		931EAD261FB1005C00DBFEFC /* GRReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRReachability.m; sourceTree = "<group>"; };
 		938206F11EA531D60098690B /* GRJson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRJson.h; sourceTree = "<group>"; };
 		938206F21EA531D60098690B /* GRJson.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GRJson.m; sourceTree = "<group>"; };
 		938206F91EA6B7250098690B /* GRJsonParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRJsonParser.h; sourceTree = "<group>"; };
@@ -636,25 +640,27 @@
 		8B25E2EC4E0A47B7478334F461FEB549 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				939361B51ECA6D3500BE4EBF /* GRURLBuilder.h */,
-				939361B61ECA6D3500BE4EBF /* GRURLBuilder.m */,
 				2EFDF07D601583646777330D04595DA4 /* GRFoundation.h */,
-				8DF270A9722FBC1CF571B1822A836D60 /* LoadableCategory.h */,
-				01EAE3E80AA6C5738B16DDD1A00EA2E0 /* UIDevice+Hardware.h */,
-				460CF235B082DBC03F7F5A7FDA4DD1AE /* UIDevice+Hardware.m */,
-				C9B9793EF4142DE2403F5AC8DA008142 /* UIImage+ColorReplacement.h */,
-				D8631A39B467A70391291792A027C95D /* UIImage+ColorReplacement.m */,
-				93E5EC651DD0EC0600D9FFF6 /* Logging.h */,
-				93A7475F1E7B3AC70049E5F8 /* GRObservable.h */,
-				93A747601E7B3AC70049E5F8 /* GRObservable.m */,
-				93A7477F1E82EA680049E5F8 /* UIColor+HexColor.h */,
-				93A747801E82EA680049E5F8 /* UIColor+HexColor.m */,
-				93C105C31EA32CBE0006ED81 /* GROMapper.h */,
-				93C105C41EA32CBE0006ED81 /* GROMapper.m */,
 				938206F11EA531D60098690B /* GRJson.h */,
 				938206F21EA531D60098690B /* GRJson.m */,
 				938206F91EA6B7250098690B /* GRJsonParser.h */,
 				938206FA1EA6B7250098690B /* GRJsonParser.m */,
+				93A7475F1E7B3AC70049E5F8 /* GRObservable.h */,
+				93A747601E7B3AC70049E5F8 /* GRObservable.m */,
+				93C105C31EA32CBE0006ED81 /* GROMapper.h */,
+				93C105C41EA32CBE0006ED81 /* GROMapper.m */,
+				931EAD251FB1005C00DBFEFC /* GRReachability.h */,
+				931EAD261FB1005C00DBFEFC /* GRReachability.m */,
+				939361B51ECA6D3500BE4EBF /* GRURLBuilder.h */,
+				939361B61ECA6D3500BE4EBF /* GRURLBuilder.m */,
+				8DF270A9722FBC1CF571B1822A836D60 /* LoadableCategory.h */,
+				93E5EC651DD0EC0600D9FFF6 /* Logging.h */,
+				93A7477F1E82EA680049E5F8 /* UIColor+HexColor.h */,
+				93A747801E82EA680049E5F8 /* UIColor+HexColor.m */,
+				01EAE3E80AA6C5738B16DDD1A00EA2E0 /* UIDevice+Hardware.h */,
+				460CF235B082DBC03F7F5A7FDA4DD1AE /* UIDevice+Hardware.m */,
+				C9B9793EF4142DE2403F5AC8DA008142 /* UIImage+ColorReplacement.h */,
+				D8631A39B467A70391291792A027C95D /* UIImage+ColorReplacement.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -848,6 +854,7 @@
 			files = (
 				A08065FD78E0EDBB66DDE5DC3B89465E /* GRFoundation-umbrella.h in Headers */,
 				939361B71ECA6D3500BE4EBF /* GRURLBuilder.h in Headers */,
+				931EAD271FB1005C00DBFEFC /* GRReachability.h in Headers */,
 				EF48777E31E5B2EBE12DB6372ADE5480 /* GRFoundation.h in Headers */,
 				93E5EC661DD0EC0600D9FFF6 /* Logging.h in Headers */,
 				93A747611E7B3AC70049E5F8 /* GRObservable.h in Headers */,
@@ -1122,6 +1129,7 @@
 				F0C48A61D9C6E296E8A1F946F83BA623 /* UIDevice+Hardware.m in Sources */,
 				93A747821E82EA680049E5F8 /* UIColor+HexColor.m in Sources */,
 				1CDD1D4F6D0FED61659F8BDDC177F91B /* UIImage+ColorReplacement.m in Sources */,
+				931EAD281FB1005C00DBFEFC /* GRReachability.m in Sources */,
 				938206F41EA531D60098690B /* GRJson.m in Sources */,
 				93A747621E7B3AC70049E5F8 /* GRObservable.m in Sources */,
 			);
