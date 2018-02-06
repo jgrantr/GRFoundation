@@ -38,7 +38,6 @@ typedef void (^GRObservableCompleteBlock)();
 
 + (instancetype) withBlock:(void (^)(GRObserver<ObjectType>* observer))block;
 + (GRObservable<ObjectType>* (^)(void (^)(GRObserver<ObjectType> *observer)))observable;
-+ (GRObservable<NSDictionary<NSKeyValueChangeKey,id> *>*)observableFor:(id<NSObject>)object keyPath:(NSString *)keypath;
 
 @property (nonatomic) BOOL asynchronous;
 @property (nonatomic, strong) dispatch_queue_t dispatchQueue;
@@ -57,5 +56,18 @@ typedef void (^GRObservableCompleteBlock)();
  *
  */
 - (GRObservable<ObjectType> *(^)(BOOL (^)(ObjectType prev, ObjectType cur))) distinctUntilChanged;
+
+@end
+
+@interface GRKVObservable<__covariant ObjectType> : GRObservable
+
++ (GRKVObservable<ObjectType> *) forObject:(id<NSObject>)object keyPath:(NSString *)keypath;
++ (GRKVObservable<NSDictionary<NSKeyValueChangeKey,id> *> *) rawObservableFor:(id<NSObject>)object keyPath:(NSString *)keypath;
+
+/**
+  * An observer attached to Key-Value Observing never actually completes, so this method is provided to complete
+  * the observable so cleanup can happen.
+  */
+- (void) complete;
 
 @end

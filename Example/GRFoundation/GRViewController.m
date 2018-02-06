@@ -294,7 +294,7 @@ GROConvertValue(structTypeVar, ^id(NSDictionary *dict){
 	
 	destroyQuickly = nil;
 	
-	kvoObservable = [GRObservable observableFor:self keyPath:@"testProperty"];
+	kvoObservable = [GRKVObservable forObject:self keyPath:@"testProperty"];
 	kvoObservable.name = @"kvoObservable(testProperty)";
 		
 	kvoObservable.subscribe(^(NSDictionary<NSKeyValueChangeKey,id> *change) {

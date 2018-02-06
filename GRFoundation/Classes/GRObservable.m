@@ -144,14 +144,12 @@ static dispatch_queue_t _privateQ;
 
 @interface GRObservable ()
 {
+	@protected
 	GRObserver *_observer;
 }
 
 @property (nonatomic, copy) void (^block)(GRObserver* observer);
 @property (nonatomic, weak) GRSubscriber *subscriptionToOtherObservable;
-@property (nonatomic, strong) id observing;
-@property (nonatomic, strong) NSString *keyPath;
-
 
 @end
 
@@ -257,30 +255,6 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 		return observable;
 	};
 }
-+ (GRObservable<NSDictionary<NSKeyValueChangeKey,id>*> *)observableFor:(id<NSObject>)object keyPath:(NSString *)keypath {
-	GRObservable *observable = [[GRObservable alloc] init];
-	observable.keyPath = keypath;
-	observable.observing = object;
-	return observable;
-}
-
-- (void) setObserving:(id)observing {
-	[_observing removeObserver:self forKeyPath:self.keyPath];
-	[self willChangeValueForKey:@"observing"];
-	_observing = observing;
-	[self didChangeValueForKey:@"observing"];
-	[observing addObserver:self forKeyPath:self.keyPath options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:(__bridge void * _Nullable)(self.keyPath)];
-}
-
-- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
-{
-	if (context == (__bridge void * _Nullable)(self.keyPath)) {
-		[_observer next:change];
-	}
-	else {
-		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-	}
-}
 
 - (id) init {
 	self = [super init];
@@ -297,7 +271,6 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 		[self.subscriptionToOtherObservable unsubscribe];
 		self.subscriptionToOtherObservable = nil;
 	}
-	self.observing = nil;
 	_observer = nil;
 }
 
@@ -390,4 +363,68 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 }
 
 
+@end
+
+@interface GRKVObservable ()
+{
+	BOOL isRaw;
+}
+
+@property (nonatomic, strong) id observing;
+@property (nonatomic, strong) NSString *keyPath;
+@property (nonatomic) BOOL isRaw;
+
+@end
+
+@implementation GRKVObservable
+
+@synthesize isRaw;
+
++ (GRKVObservable *) forObject:(id<NSObject>)object keyPath:(NSString *)keypath isRaw:(BOOL)isRaw {
+	GRKVObservable *observable = [[GRKVObservable alloc] init];
+	observable.keyPath = keypath;
+	observable.isRaw = isRaw;
+	observable.observing = object;
+	return observable;
+}
+
++ (GRKVObservable *) forObject:(id<NSObject>)object keyPath:(NSString *)keypath {
+	return [self forObject:object keyPath:keypath isRaw:NO];
+}
+
++ (GRKVObservable<NSDictionary<NSKeyValueChangeKey,id> *> *) rawObservableFor:(id<NSObject>)object keyPath:(NSString *)keypath {
+	return [self forObject:object keyPath:keypath isRaw:YES];
+}
+
+- (void) dealloc {
+	DDLogDebug(@"dealloc of GRKVObservable<%p> (%@) called", self, self.name);
+	self.observing = nil;
+}
+
+- (void) setObserving:(id)observing {
+	[_observing removeObserver:self forKeyPath:self.keyPath];
+	[self willChangeValueForKey:@"observing"];
+	_observing = observing;
+	[self didChangeValueForKey:@"observing"];
+	[observing addObserver:self forKeyPath:self.keyPath options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:(__bridge void * _Nullable)(self.keyPath)];
+}
+
+- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
+{
+	if (context == (__bridge void * _Nullable)(self.keyPath)) {
+		if (isRaw) {
+			[_observer next:change];
+		}
+		else {
+			[_observer next:change[NSKeyValueChangeNewKey]];
+		}
+	}
+	else {
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+	}
+}
+
+- (void) complete {
+	[_observer complete];
+}
 @end
