@@ -165,8 +165,11 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 			}
 			case GROJsonTypeString:
 			case GROJsonTypeTypeNumber:
-			case GROJsonTypeNull:
 				@throw errorWithCodeAndDescription(GROMapperErrorCodeInvalidRootJSONObject, @"Cannot map a JSON basic type (string, number, etc).  Root of the JSON must be an array or object.");
+				break;
+			case GROJsonTypeNull:
+				// if they pass in null, the resulting object should map to nil
+				break;
 		}
 	} @catch (NSError *thrown) {
 		if (error) {
