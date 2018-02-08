@@ -138,8 +138,10 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 	@try {
 		if (source == nil) @throw errorWithCodeAndDescription(GROMapperErrorCodeSourceJSONIsNil, @"source JSON object is nil");
 		if (clazz == nil) @throw errorWithCodeAndDescription(GROMapperErrorCodeMappingClassIsNil, @"Class to map to cannot be nil");
+		
 		switch (jsonType(source)) {
 			case GROJsonTypeUnknown:
+				@throw errorWithCodeAndDescription(GROMapperErrorCodeInvalidRootJSONObject, @"source object is an invalid JSON type (passed in %@)", source);
 				break;
 			case GROJsonTypeObject:
 				rootObj = [[clazz alloc] init];
