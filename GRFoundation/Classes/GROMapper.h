@@ -25,12 +25,14 @@ typedef NS_ENUM(NSInteger, GROMapperErrorCode) {
 	 */
 	GROMapperErrorCodeNotKeyValueCodingCompliant,
 	GROMapperErrorCodeGeneralError,
+	/** The source object to conver to JSON is nil */
+	GROMapperErrorCodeSourceObjectIsNil,
 };
 
 // mapping macros for dict -> object
 
 #define GROMap(key, property) XGROMap(key, property)
-#define XGROMap(key, property) -(NSString*) GROMapperPropertyFor_##key { return @#property; }
+#define XGROMap(key, property) -(NSString*) GROMapperPropertyFor_##key { return @#property; } - (NSString *) GROMapperKeyFor_##property { return @#key; }
 
 #define GROArrayClass(property, clazz) XGROArrayClass(property, clazz)
 #define XGROArrayClass(property, clazz) -(Class) GROMapperArrayClassFor_##property { return [clazz class]; }
@@ -50,5 +52,7 @@ typedef NS_ENUM(NSInteger, GROMapperErrorCode) {
 - (id) mapSource:(id)object to:(Class)clazz error:(NSError *__autoreleasing *)error;
 
 - (void) map:(NSDictionary <NSString*,id> *)source toObject:(id)target;
+
+- (id) jsonObjectFor:(id)object error:(NSError *__autoreleasing *)error;
 
 @end

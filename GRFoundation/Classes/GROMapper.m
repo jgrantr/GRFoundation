@@ -68,6 +68,22 @@ static GROTargetType targetType(id source) {
 	}
 }
 
+static GROJsonType sourceObjectType(id source) {
+	if ([source isKindOfClass:[NSString class]]) {
+		return GROJsonTypeString;
+	}
+	else if ([source isKindOfClass:[NSNumber class]]) {
+		return GROJsonTypeTypeNumber;
+	}
+	else if (source == [NSNull null]) {
+		return GROJsonTypeNull;
+	}
+	else if ([source isKindOfClass:[NSArray class]]) {
+		return GROJsonTypeArray;
+	}
+	return GROJsonTypeObject;
+}
+
 static NSError * errorWithCodeAndDescription(NSInteger code, NSString *format, ...) {
 	va_list varArgs;
 	va_start(varArgs, format);
@@ -309,6 +325,64 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 		[array addObject:targetItem];
 		[self map:item toObject:targetItem];
 	}
+}
+
+- (id) jsonObjectFor:(id)source error:(NSError *__autoreleasing *)error {
+	id rootObj = nil;
+	@try {
+		if (source == nil) @throw  errorWithCodeAndDescription(GROMapperErrorCodeSourceObjectIsNil, @"object to convert to JSON is nil");
+		
+		rootObj = [self convertToJSON:source];
+		
+	}@catch (NSError *thrown) {
+		if (error) {
+			*error = thrown;
+		}
+		rootObj = nil;
+	} @catch (NSException *exception) {
+		NSError *toRaise = nil;
+		if ([exception.name isEqualToString:NSUndefinedKeyException]) {
+			NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:exception.userInfo];
+			userInfo[NSLocalizedDescriptionKey] = exception.reason;
+			toRaise = [NSError errorWithDomain:GROMapperErrorDomain code:GROMapperErrorCodeNotKeyValueCodingCompliant userInfo:userInfo];
+		}
+		else {
+			NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:exception.userInfo];
+			userInfo[NSLocalizedDescriptionKey] = exception.reason;
+			toRaise = [NSError errorWithDomain:GROMapperErrorDomain code:GROMapperErrorCodeGeneralError userInfo:userInfo];
+		}
+		if (error) {
+			*error = toRaise;
+		}
+		rootObj = nil;
+	} @finally {
+		
+	}
+	return rootObj;
+}
+
+- (id) convertToJSON:(id)source {
+	id convertedObj = nil;
+	switch (sourceObjectType(source)) {
+		case GROJsonTypeUnknown:
+			break;
+		case GROJsonTypeObject:
+			convertedObj = [NSMutableDictionary dictionaryWithCapacity:10];
+			break;
+		case GROJsonTypeArray:
+			convertedObj = [NSMutableArray arrayWithCapacity:10];
+			break;
+		case GROJsonTypeString:
+			convertedObj = source;
+			break;
+		case GROJsonTypeTypeNumber:
+			convertedObj = source;
+			break;
+		case GROJsonTypeNull:
+			convertedObj = [NSNull null];
+			break;
+	}
+	return convertedObj;
 }
 
 @end

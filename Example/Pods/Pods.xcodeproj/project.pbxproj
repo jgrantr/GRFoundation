@@ -119,6 +119,8 @@
 		93A747821E82EA680049E5F8 /* UIColor+HexColor.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A747801E82EA680049E5F8 /* UIColor+HexColor.m */; };
 		93C105C51EA32CBF0006ED81 /* GROMapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 93C105C31EA32CBE0006ED81 /* GROMapper.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		93C105C61EA32CBF0006ED81 /* GROMapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 93C105C41EA32CBE0006ED81 /* GROMapper.m */; };
+		93D2109E204B547B004E3384 /* NSDate+GRExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 93D2109C204B547B004E3384 /* NSDate+GRExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		93D2109F204B547B004E3384 /* NSDate+GRExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 93D2109D204B547B004E3384 /* NSDate+GRExtensions.m */; };
 		93E5EC661DD0EC0600D9FFF6 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 93E5EC651DD0EC0600D9FFF6 /* Logging.h */; };
 		94C47C87E397972CE98F75929F3B706C /* ExpectaObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2F6A3855E2A608C79EF52060C4ECB3A5 /* ExpectaObject.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		9668388923CC69C21843D39AAEA50F58 /* SPTCompiledExample.m in Sources */ = {isa = PBXBuildFile; fileRef = 49D6FE9238D27594C6ADF969BB631A7E /* SPTCompiledExample.m */; };
@@ -339,6 +341,8 @@
 		93A747801E82EA680049E5F8 /* UIColor+HexColor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+HexColor.m"; sourceTree = "<group>"; };
 		93C105C31EA32CBE0006ED81 /* GROMapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GROMapper.h; sourceTree = "<group>"; };
 		93C105C41EA32CBE0006ED81 /* GROMapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GROMapper.m; sourceTree = "<group>"; };
+		93D2109C204B547B004E3384 /* NSDate+GRExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+GRExtensions.h"; sourceTree = "<group>"; };
+		93D2109D204B547B004E3384 /* NSDate+GRExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+GRExtensions.m"; sourceTree = "<group>"; };
 		93E5EC651DD0EC0600D9FFF6 /* Logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logging.h; sourceTree = "<group>"; };
 		9534F980F862F3439BFB9A5F458317C3 /* EXPMatchers+beLessThan.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "EXPMatchers+beLessThan.h"; path = "Expecta/Matchers/EXPMatchers+beLessThan.h"; sourceTree = "<group>"; };
 		96F11BDDC9C7E30042ACBB2D358C4EC3 /* Pods-GRFoundation_Tests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = "Pods-GRFoundation_Tests.modulemap"; sourceTree = "<group>"; };
@@ -661,6 +665,8 @@
 				460CF235B082DBC03F7F5A7FDA4DD1AE /* UIDevice+Hardware.m */,
 				C9B9793EF4142DE2403F5AC8DA008142 /* UIImage+ColorReplacement.h */,
 				D8631A39B467A70391291792A027C95D /* UIImage+ColorReplacement.m */,
+				93D2109C204B547B004E3384 /* NSDate+GRExtensions.h */,
+				93D2109D204B547B004E3384 /* NSDate+GRExtensions.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -861,6 +867,7 @@
 				93C105C51EA32CBF0006ED81 /* GROMapper.h in Headers */,
 				938206FB1EA6B7250098690B /* GRJsonParser.h in Headers */,
 				93A747811E82EA680049E5F8 /* UIColor+HexColor.h in Headers */,
+				93D2109E204B547B004E3384 /* NSDate+GRExtensions.h in Headers */,
 				938206F31EA531D60098690B /* GRJson.h in Headers */,
 				F8579C773A13DE5AB0C6E92B912B9687 /* LoadableCategory.h in Headers */,
 				19C9F250B8ADDC3E000B48E12B9B0480 /* UIDevice+Hardware.h in Headers */,
@@ -1123,6 +1130,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BDEE4482F04DA913B5CACADE234A5BE9 /* GRFoundation-dummy.m in Sources */,
+				93D2109F204B547B004E3384 /* NSDate+GRExtensions.m in Sources */,
 				938206FC1EA6B7250098690B /* GRJsonParser.m in Sources */,
 				93C105C61EA32CBF0006ED81 /* GROMapper.m in Sources */,
 				939361B81ECA6D3500BE4EBF /* GRURLBuilder.m in Sources */,
