@@ -41,6 +41,24 @@ typedef NS_ENUM(NSInteger, GROMapperErrorCode) {
 
 #define GROCustomMapping(key, block) -(void(^)(id)) GROMapperCustomMappingBlockFor_##key { return block; }
 
+#define GROConvertToJSON(property, block) XGROConvertToJSON(property, block)
+#define XGROConvertToJSON(property, block) -(id(^)(void)) GROMapperConvertToJSONFor_##property { return block; }
+
+
+/**
+  * Class for mapping a JSON object (aka, an NSDictionary or NSArray) to an Objective-C object.
+  *
+  * Also provides the revers-mapping, and can take a KVC-compliant Objective-C object and turn it into an equivalent NSDictionary
+  * that will then be suitable for serializing to JSON.
+  *
+  * Please not that because of the pre-processor macros, if you wish to return a dictionary literal (or some other piece of code in your block that contains commas)
+  * from a GROConvertValue or GROConvertToJSON block, you will need to encapsulate it in parantheses, like this:
+  *
+  * GROConvertToJSON(myProperty, ^id {
+  *     return (@{@"value1" : @(1), @"value2" : @(2)});
+  * })
+  *
+  */
 @interface GROMapper : NSObject
 
 @property (nonatomic) BOOL ignoreNulls;
@@ -48,6 +66,8 @@ typedef NS_ENUM(NSInteger, GROMapperErrorCode) {
 + (instancetype) mapper;
 
 + (id) map:(id)object to:(Class)clazz error:(NSError *__autoreleasing *)error;
+
++ (id) jsonObjectFrom:(id)object error:(NSError *__autoreleasing *)error;
 
 - (id) mapSource:(id)object to:(Class)clazz error:(NSError *__autoreleasing *)error;
 

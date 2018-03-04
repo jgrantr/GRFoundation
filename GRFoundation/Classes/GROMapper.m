@@ -15,17 +15,32 @@ NSString *GROMapperErrorDomain = @"net.mr-r.GROMapper";
 
 
 #define PROPERTY_MAP_PREFIX @"GROMapperPropertyFor_"
+#define KEY_MAP_PREFIX @"GROMapperKeyFor_"
 #define ARRAY_CLASS_PREFIX @"GROMapperArrayClassFor_"
 #define CONVERTER_BLOCK_PREFIX @"GROMapperConvertBlockFor_"
 #define CUSTOM_MAPPING_PREFIX @"GROMapperCustomMappingBlockFor_"
+#define JSON_CONVERSION_PREFIX @"GROMapperConvertToJSONFor_"
 
 typedef NS_ENUM(NSInteger, GROJsonType) {
 	GROJsonTypeUnknown,
 	GROJsonTypeObject,
 	GROJsonTypeArray,
 	GROJsonTypeString,
-	GROJsonTypeTypeNumber,
+	GROJsonTypeNumber,
 	GROJsonTypeNull,
+};
+
+typedef NS_ENUM(NSInteger, GROSourceType) {
+	GROSourceTypeUnknown,
+	GROSourceTypeDictionary,
+	GROSourceTypeArray,
+	GROSourceTypeCustomObject,
+	GROSourceTypeString,
+	GROSourceTypeNumber,
+	GROSourceTypePrimitive,
+	GROSourceTypeNull,
+	GROSourceTypeNeedsConversionBlock,
+	GROSourceTypeInconvertibleValue,
 };
 
 typedef NS_ENUM(NSInteger, GROTargetType) {
@@ -40,7 +55,7 @@ static GROJsonType jsonType(id source) {
 		return GROJsonTypeString;
 	}
 	else if ([source isKindOfClass:[NSNumber class]]) {
-		return GROJsonTypeTypeNumber;
+		return GROJsonTypeNumber;
 	}
 	else if ([source isKindOfClass:[NSDictionary class]]) {
 		return GROJsonTypeObject;
@@ -68,20 +83,74 @@ static GROTargetType targetType(id source) {
 	}
 }
 
-static GROJsonType sourceObjectType(id source) {
+static GROSourceType sourceObjectType(id source) {
 	if ([source isKindOfClass:[NSString class]]) {
-		return GROJsonTypeString;
+		return GROSourceTypeString;
 	}
 	else if ([source isKindOfClass:[NSNumber class]]) {
-		return GROJsonTypeTypeNumber;
+		return GROSourceTypeNumber;
 	}
 	else if (source == [NSNull null]) {
-		return GROJsonTypeNull;
+		return GROSourceTypeNull;
 	}
 	else if ([source isKindOfClass:[NSArray class]]) {
-		return GROJsonTypeArray;
+		return GROSourceTypeArray;
 	}
-	return GROJsonTypeObject;
+	else if ([source isKindOfClass:[NSDictionary class]]) {
+		return GROSourceTypeDictionary;
+	}
+	return GROSourceTypeCustomObject;
+}
+
+static GROSourceType sourceTypeFromAttributes(const char *attr) {
+	switch (attr[1]) {
+		case 'v':
+			// can't convert a void
+			return GROSourceTypeInconvertibleValue;
+			break;
+		case '#':
+			// can't convert a class object
+			return GROSourceTypeInconvertibleValue;
+			break;
+		case ':':
+			// can't convert a selector
+			return GROSourceTypeInconvertibleValue;
+			break;
+		case '[':
+		case '{':
+		case '(':
+			// look for a custom conversion block
+			return GROSourceTypeNeedsConversionBlock;
+			break;
+		case 'b':
+			// a bit-field, need a custom conversion block
+			return GROSourceTypeNeedsConversionBlock;
+			break;
+		case '^':
+			// a pointer to a type, not sure how we would convert that, unless it is with a custom conversion block
+			return GROSourceTypeNeedsConversionBlock;
+			break;
+		case '?':
+			// an unknown type
+			return GROSourceTypeNeedsConversionBlock;
+			break;
+		case '@':
+			if (attr[2] == '"' || attr[2] == ',') {
+				// it is an object
+				return GROSourceTypeCustomObject;
+			}
+			else if (attr[2] == '?') {
+				// it is a block
+				return GROSourceTypeInconvertibleValue;
+			}
+			else {
+				// something else?
+				return GROSourceTypeInconvertibleValue;
+			}
+			break;
+	}
+	// if we fall out of the switch, it is a primitive type that can/will be wrapped
+	return GROSourceTypePrimitive;
 }
 
 static NSError * errorWithCodeAndDescription(NSInteger code, NSString *format, ...) {
@@ -149,6 +218,10 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 	return [[self mapper] mapSource:source to:clazz error:error];
 }
 
++ (id) jsonObjectFrom:(id)object error:(NSError *__autoreleasing *)error {
+	return [[self mapper] jsonObjectFor:object error:error];
+}
+
 - (id) mapSource:(id)source to:(Class)clazz error:(NSError *__autoreleasing *)error {
 	id rootObj = nil;
 	@try {
@@ -180,7 +253,7 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 				break;
 			}
 			case GROJsonTypeString:
-			case GROJsonTypeTypeNumber:
+			case GROJsonTypeNumber:
 				@throw errorWithCodeAndDescription(GROMapperErrorCodeInvalidRootJSONObject, @"Cannot map a JSON basic type (string, number, etc).  Root of the JSON must be an array or object.");
 				break;
 			case GROJsonTypeNull:
@@ -334,7 +407,7 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 		
 		rootObj = [self convertToJSON:source];
 		
-	}@catch (NSError *thrown) {
+	} @catch (NSError *thrown) {
 		if (error) {
 			*error = thrown;
 		}
@@ -364,23 +437,102 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 - (id) convertToJSON:(id)source {
 	id convertedObj = nil;
 	switch (sourceObjectType(source)) {
-		case GROJsonTypeUnknown:
+		case GROSourceTypeUnknown:
 			break;
-		case GROJsonTypeObject:
+		case GROSourceTypeDictionary:
+		{
+			NSDictionary *sourceDict = source;
 			convertedObj = [NSMutableDictionary dictionaryWithCapacity:10];
+			NSMutableDictionary *convertedDict = convertedObj;
+			[sourceDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+				convertedDict[key] = [self convertToJSON:obj];
+			}];
 			break;
-		case GROJsonTypeArray:
+		}
+		case GROSourceTypeArray:
+		{
+			NSArray *sourceArray = source;
 			convertedObj = [NSMutableArray arrayWithCapacity:10];
+			NSMutableArray *convertedArray = convertedObj;
+			for (id object in sourceArray) {
+				[convertedArray addObject:[self convertToJSON:object]];
+			}
 			break;
-		case GROJsonTypeString:
+		}
+		case GROSourceTypeCustomObject:
+		{
+			convertedObj = [self convertCustomObject:source];
+			break;
+		}
+		case GROSourceTypeString:
 			convertedObj = source;
 			break;
-		case GROJsonTypeTypeNumber:
+		case GROSourceTypeNumber:
 			convertedObj = source;
 			break;
-		case GROJsonTypeNull:
+		case GROSourceTypePrimitive:
+			break;
+		case GROSourceTypeNull:
 			convertedObj = [NSNull null];
 			break;
+		case GROSourceTypeNeedsConversionBlock:
+			break;
+		case GROSourceTypeInconvertibleValue:
+			break;
+	}
+	return convertedObj;
+}
+
+- (NSDictionary *) convertCustomObject:(id)customObj {
+	Class customClass = [customObj class];
+	unsigned int count = 0;
+	objc_property_t *propList = class_copyPropertyList(customClass, &count);
+	NSMutableDictionary *convertedObj = [NSMutableDictionary dictionaryWithCapacity:count];
+	for (int i = 0; i < count; i++) {
+		objc_property_t property = propList[i];
+		const char *attr = property_getAttributes(property);
+		NSString *propName = [NSString stringWithUTF8String:property_getName(property)];
+		GROSourceType propType = sourceTypeFromAttributes(attr);
+		if (propType == GROSourceTypeInconvertibleValue) {
+			DDLogInfo(@"property '%@' (@encode-type '%s') from class '%@' cannot be converted to JSON", propName, attr, NSStringFromClass(customClass));
+			continue;
+		}
+		NSString *key = propName;
+		SEL selector = NSSelectorFromString([KEY_MAP_PREFIX stringByAppendingString:propName]);
+		if ([customObj respondsToSelector:selector]) {
+			IMP imp = class_getMethodImplementation(customClass, selector);
+			NSString* (*func)(id, SEL) = (void *)imp;
+			key = func(customObj, selector);
+		}
+		if (propType == GROSourceTypePrimitive) {
+			convertedObj[key] = [customObj valueForKey:propName];
+		}
+		else if (propType == GROSourceTypeCustomObject) {
+			convertedObj[key] = [self convertToJSON:[customObj valueForKey:propName]];
+		}
+		else if (propType == GROSourceTypeNeedsConversionBlock) {
+			SEL selector = NSSelectorFromString([JSON_CONVERSION_PREFIX stringByAppendingString:propName]);
+			if ([customObj respondsToSelector:selector]) {
+				IMP imp = class_getMethodImplementation(customClass, selector);
+				id (*func)(id, SEL) = (void *)imp;
+				id (^converterBlock)(void) = func(customObj, selector);
+				if (converterBlock) {
+					id value = converterBlock();
+					if (value && jsonType(value) != GROJsonTypeUnknown) {
+						convertedObj[key] = value;
+					}
+					else if (value) {
+						DDLogWarn(@"converter block for '%@' returned an invalid JSON value ('%@') of type %@", propName, value, NSStringFromClass([value class]));
+					}
+				}
+			}
+			else {
+				DDLogInfo(@"property '%@' with @encode-type '%s' will not be converted to JSON because no conversion block was specified", propName, attr);
+			}
+		}
+	}
+	if (propList) {
+		free(propList);
 	}
 	return convertedObj;
 }

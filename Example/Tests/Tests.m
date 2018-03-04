@@ -8,23 +8,99 @@
 
 // https://github.com/Specta/Specta
 
+#import <GRFoundation/GRFoundation.h>
+
+struct TestSerializeStruct {
+	double value1;
+	double value2;
+};
+
+typedef struct TestSerializeStruct TestSerializeStruct;
+
+@interface TestSerializeClass : NSObject
+
+@property (nonatomic, strong) NSString *stringValue;
+@property (nonatomic, strong) NSNumber *numberValue;
+@property (nonatomic) double doubleValue;
+@property (nonatomic) int intValue;
+@property (nonatomic) TestSerializeStruct structValue;
+
+@end
+
+@implementation TestSerializeClass
+
+- (instancetype) init {
+	self = [super init];
+	if (self) {
+		_stringValue = @"Hello World";
+		_numberValue = @(2);
+		_doubleValue = 2.0;
+		_intValue = 3;
+		_structValue = (struct TestSerializeStruct){1, 2};
+	}
+	return self;
+}
+
+@end
+
+@interface TestSerializeClassWithConversion : NSObject
+
+@property (nonatomic, strong) NSString *stringValue;
+@property (nonatomic, strong) NSNumber *numberValue;
+@property (nonatomic) double doubleValue;
+@property (nonatomic) int intValue;
+@property (nonatomic) TestSerializeStruct structValue;
+
+@end
+
+@implementation TestSerializeClassWithConversion
+
+GROConvertToJSON(structValue, ^id(void) {
+	return (@{@"value1" : @(self.structValue.value1), @"value2" : @(self.structValue.value2)});
+})
+
+- (instancetype) init {
+	self = [super init];
+	if (self) {
+		_stringValue = @"Hello World";
+		_numberValue = @(2);
+		_doubleValue = 2.0;
+		_intValue = 3;
+		_structValue = (struct TestSerializeStruct){1, 2};
+	}
+	return self;
+}
+
+@end
+
+
 SpecBegin(InitialSpecs)
 
-describe(@"these will fail", ^{
+describe(@"ConvertToJSON", ^{
 
-    it(@"can do maths", ^{
-        expect(1).to.equal(2);
-    });
-
-    it(@"can read", ^{
-        expect(@"number").to.equal(@"string");
-    });
-    
-    it(@"will wait for 10 seconds and fail", ^{
-        waitUntil(^(DoneCallback done) {
-        
-        });
-    });
+	it(@"can serialize", ^{
+		TestSerializeClass *toSerialize = [[TestSerializeClass alloc] init];
+		NSError *error = nil;
+		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
+		expect(json[@"stringValue"]).to.equal(@"Hello World");
+		expect(json[@"structValue"]).to.equal(nil);
+		expect(json[@"numberValue"]).to.equal(@(2));
+		expect(json[@"doubleValue"]).to.equal(@(2.0));
+		expect(json[@"intValue"]).to.equal(@(3));
+	});
+	
+	it(@"can custom map", ^{
+		TestSerializeClassWithConversion *toSerialize = [[TestSerializeClassWithConversion alloc] init];
+		NSError *error = nil;
+		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
+		expect(json[@"stringValue"]).to.equal(@"Hello World");
+		expect(json[@"numberValue"]).to.equal(@(2));
+		expect(json[@"doubleValue"]).to.equal(@(2.0));
+		expect(json[@"intValue"]).to.equal(@(3));
+		NSDictionary<NSString*,NSNumber*> *structDict = json[@"structValue"];
+		expect(structDict[@"value1"]).to.equal(@(1));
+		expect(structDict[@"value2"]).to.equal(@(2));
+	});
 });
 
 describe(@"these will pass", ^{
