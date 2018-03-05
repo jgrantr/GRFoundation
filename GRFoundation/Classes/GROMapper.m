@@ -498,37 +498,40 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 			continue;
 		}
 		NSString *key = propName;
+		// first check to see if there should be a different name for this object in the JSON
 		SEL selector = NSSelectorFromString([KEY_MAP_PREFIX stringByAppendingString:propName]);
 		if ([customObj respondsToSelector:selector]) {
 			IMP imp = class_getMethodImplementation(customClass, selector);
 			NSString* (*func)(id, SEL) = (void *)imp;
 			key = func(customObj, selector);
 		}
-		if (propType == GROSourceTypePrimitive) {
+		selector = NSSelectorFromString([JSON_CONVERSION_PREFIX stringByAppendingString:propName]);
+		if ([customObj respondsToSelector:selector]) {
+			IMP imp = class_getMethodImplementation(customClass, selector);
+			id (*func)(id, SEL) = (void *)imp;
+			id (^converterBlock)(void) = func(customObj, selector);
+			if (converterBlock) {
+				id value = converterBlock();
+				if (value && jsonType(value) != GROJsonTypeUnknown) {
+					convertedObj[key] = value;
+				}
+				else if (value) {
+					DDLogWarn(@"converter block for '%@' returned an invalid JSON value ('%@') of type %@", propName, value, NSStringFromClass([value class]));
+				}
+			}
+			else {
+				DDLogWarn(@"converter block for '%@' didn't return a valid block, value will not be converted", propName);
+			}
+			continue;
+		}
+		else if (propType == GROSourceTypePrimitive) {
 			convertedObj[key] = [customObj valueForKey:propName];
 		}
 		else if (propType == GROSourceTypeCustomObject) {
 			convertedObj[key] = [self convertToJSON:[customObj valueForKey:propName]];
 		}
 		else if (propType == GROSourceTypeNeedsConversionBlock) {
-			SEL selector = NSSelectorFromString([JSON_CONVERSION_PREFIX stringByAppendingString:propName]);
-			if ([customObj respondsToSelector:selector]) {
-				IMP imp = class_getMethodImplementation(customClass, selector);
-				id (*func)(id, SEL) = (void *)imp;
-				id (^converterBlock)(void) = func(customObj, selector);
-				if (converterBlock) {
-					id value = converterBlock();
-					if (value && jsonType(value) != GROJsonTypeUnknown) {
-						convertedObj[key] = value;
-					}
-					else if (value) {
-						DDLogWarn(@"converter block for '%@' returned an invalid JSON value ('%@') of type %@", propName, value, NSStringFromClass([value class]));
-					}
-				}
-			}
-			else {
-				DDLogInfo(@"property '%@' with @encode-type '%s' will not be converted to JSON because no conversion block was specified", propName, attr);
-			}
+			DDLogInfo(@"property '%@' with @encode-type '%s' will not be converted to JSON because no conversion block was specified", propName, attr);
 		}
 	}
 	if (propList) {

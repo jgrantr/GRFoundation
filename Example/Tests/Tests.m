@@ -73,6 +73,37 @@ GROConvertToJSON(structValue, ^id(void) {
 
 @end
 
+@interface TestSerializeClassPreferConvert : NSObject
+
+@property (nonatomic, strong) NSString *stringValue;
+@property (nonatomic, strong) NSNumber *numberValue;
+@property (nonatomic) double doubleValue;
+@property (nonatomic) int intValue;
+@property (nonatomic) int overrideValue;
+
+@end
+
+@implementation TestSerializeClassPreferConvert
+
+GROConvertToJSON(overrideValue, ^id(void) {
+	return @(10);
+})
+
+- (instancetype) init {
+	self = [super init];
+	if (self) {
+		_stringValue = @"Hello World";
+		_numberValue = @(2);
+		_doubleValue = 2.0;
+		_intValue = 3;
+		_overrideValue = 5;
+	}
+	return self;
+}
+
+@end
+
+
 
 SpecBegin(InitialSpecs)
 
@@ -100,6 +131,17 @@ describe(@"ConvertToJSON", ^{
 		NSDictionary<NSString*,NSNumber*> *structDict = json[@"structValue"];
 		expect(structDict[@"value1"]).to.equal(@(1));
 		expect(structDict[@"value2"]).to.equal(@(2));
+	});
+	
+	it(@"can prefer convert blocks over property", ^{
+		TestSerializeClassPreferConvert *toSerialize = [[TestSerializeClassPreferConvert alloc] init];
+		NSError *error = nil;
+		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
+		expect(json[@"stringValue"]).to.equal(@"Hello World");
+		expect(json[@"numberValue"]).to.equal(@(2));
+		expect(json[@"doubleValue"]).to.equal(@(2.0));
+		expect(json[@"intValue"]).to.equal(@(3));
+		expect(json[@"overrideValue"]).to.equal(@(10));
 	});
 });
 
