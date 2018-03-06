@@ -61,14 +61,52 @@ typedef NS_ENUM(NSInteger, GROMapperErrorCode) {
   */
 @interface GROMapper : NSObject
 
+
+/**
+ Whether to ignore null values from the JSON object.  Default value is YES.
+ */
 @property (nonatomic) BOOL ignoreNulls;
 
 + (instancetype) mapper;
 
+
+/**
+ Map a JSON dictionary created from NSJSONSerialization to a KVC-compliant object
+
+ @param object the dictionary or array to map
+ @param clazz the class object to use for the converted object
+ @param error an out pointer that holds any error encountered during conversion
+ @return an instance of the clazz object passed in, or nil if an error occurs during mapping
+ */
 + (id) map:(id)object to:(Class)clazz error:(NSError *__autoreleasing *)error;
 
+
+/**
+ Create a dictionary representation of a KVC-compliant object.  The mapping is as follows:
+ 
+ C primitives (BOOL, int, double, etc) -> NSNumber
+ const char * -> NSString
+ NSString -> NSString
+ NSNumber -> NSNumber
+ id -> NSDictionary (property names are keys, property values mapped using above rules)
+ 
+ If the property of an object does not fall into one of the above types, it needs a custom conversion block to be included in the serialization
+
+ @param object the object to convert
+ @param error an out pointer that holds an error encountered during conversion
+ @return a mutable dictionary or array (depending on the type of object passed in) that contains the converted object
+ */
 + (id) jsonObjectFrom:(id)object error:(NSError *__autoreleasing *)error;
 
+
+/**
+ Maps a source object (should be either a dictionary or an array) to an instance of clazz.
+
+ @param object the dictionary or array to map
+ @param clazz the class object to use for the converted object
+ @param error an out pointer that holds any error encountered during conversion
+ @return an instance of the clazz object passed in, or nil if an error occurs during mapping
+ */
 - (id) mapSource:(id)object to:(Class)clazz error:(NSError *__autoreleasing *)error;
 
 - (void) map:(NSDictionary <NSString*,id> *)source toObject:(id)target;

@@ -483,7 +483,7 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 	return convertedObj;
 }
 
-- (NSDictionary *) convertCustomObject:(id)customObj {
+- (NSMutableDictionary *) convertCustomObject:(id)customObj {
 	Class customClass = [customObj class];
 	unsigned int count = 0;
 	objc_property_t *propList = class_copyPropertyList(customClass, &count);
