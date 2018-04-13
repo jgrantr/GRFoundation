@@ -78,7 +78,7 @@ static dispatch_queue_t _privateQ;
 	});
 }
 
-- (void) runOnQueue:(void (^)())block {
+- (void) runOnQueue:(void (^)(void))block {
 	if (self.asynchronous) {
 		dispatch_async(self.dispatchQueue?:dispatch_get_main_queue(), block);
 	}
@@ -158,7 +158,7 @@ static dispatch_queue_t _privateQ;
 
 @property (nonatomic, copy) void (^nextBlock)(id value);
 @property (nonatomic, copy) void (^errorBlock)(NSError *error);
-@property (nonatomic, copy) void (^completeBlock)();
+@property (nonatomic, copy) void (^completeBlock)(void);
 
 @end
 
@@ -173,7 +173,7 @@ static dispatch_queue_t _privateQ;
 }
 
 
-+ (GRSubscriber *) next:(void (^)(id value))next error:(void (^)(NSError *error))error complete:(void (^)())complete {
++ (GRSubscriber *) next:(void (^)(id value))next error:(void (^)(NSError *error))error complete:(void (^)(void))complete {
 	GRSubscriber *sub = [[GRSubscriber alloc] init];
 	sub.nextBlock = next;
 	sub.errorBlock = error;

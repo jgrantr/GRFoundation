@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'GRFoundation'
-  s.version          = '0.9.6'
+  s.version          = '0.9.7'
   s.summary          = 'Utility extensions to the Foundation and UIKit frameworks'
 
 # This description is used to generate tags and improve search results.
@@ -40,5 +40,5 @@ extracting useful data about a iOS device.
 
   s.public_header_files = 'GRFoundation/Classes/**/GR*.h', 'GRFoundation/Classes/**/UI*.h', 'GRFoundation/Classes/**/NS*.h'
   s.frameworks = 'UIKit', 'Foundation'
-  s.dependency 'CocoaLumberjack', '~> 2.4'
+  s.dependency 'CocoaLumberjack', '~> 3.2'
 end
