@@ -10,7 +10,7 @@
 
 typedef void (^GRObservableNextBlock)(id value);
 typedef void (^GRObservableErrorBlock)(NSError *error);
-typedef void (^GRObservableCompleteBlock)();
+typedef void (^GRObservableCompleteBlock)(void);
 
 @interface GRObserver<__covariant ObjectType> : NSObject
 
@@ -22,7 +22,7 @@ typedef void (^GRObservableCompleteBlock)();
 
 @interface GRSubscriber<__covariant ObjectType> : GRObserver<ObjectType>
 
-+ (GRSubscriber *) next:(void (^)(ObjectType value))next error:(void (^)(NSError *error))error complete:(void (^)())complete;
++ (GRSubscriber *) next:(void (^)(ObjectType value))next error:(void (^)(NSError *error))error complete:(void (^)(void))complete;
 + (GRSubscriber *) next:(void (^)(ObjectType value))next error:(void (^)(NSError *error))error;
 + (GRSubscriber *) next:(void (^)(ObjectType value))next;
 
