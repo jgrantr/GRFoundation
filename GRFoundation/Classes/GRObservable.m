@@ -23,6 +23,9 @@ static dispatch_queue_t _privateQ;
 @interface GRSubscriber ()
 
 @property (nonatomic, weak) GRObserver *parent;
+@property (nonatomic, copy) void (^nextBlock)(id value);
+@property (nonatomic, copy) void (^errorBlock)(NSError *error);
+@property (nonatomic, copy) void (^completeBlock)(void);
 
 @end
 
@@ -36,7 +39,6 @@ static dispatch_queue_t _privateQ;
 
 @property (nonatomic) BOOL asynchronous;
 @property (nonatomic, strong) dispatch_queue_t dispatchQueue;
-
 
 - (void) addSubscriber:(GRSubscriber *)subscriber;
 - (void) removeSubscriber:(GRSubscriber *)subscriber;
@@ -52,6 +54,10 @@ static dispatch_queue_t _privateQ;
 		isMainQueue = (self.dispatchQueue == nil || self.dispatchQueue == dispatch_get_main_queue());
 	}
 	return self;
+}
+
+- (void) dealloc {
+	DDLogDebug(@"%p: dealloc called", self);
 }
 
 - (void) setDispatchQueue:(dispatch_queue_t)dispatchQueue {
@@ -96,47 +102,53 @@ static dispatch_queue_t _privateQ;
 
 - (void) next:(id)value {
 	[self runOnQueue:^{
+		__strong GRObserver *strongSelf = self;
 		__block NSArray *subCopy;
 		dispatch_sync(_privateQ, ^{
-			subCopy = [subscribers copy];
+			subCopy = [strongSelf->subscribers copy];
 		});
 		for (GRSubscriber *subscriber in subCopy) {
 			[subscriber next:value];
 		}
+		strongSelf = nil;
 	}];
 }
 
 - (void) error:(NSError *)error {
 	[self runOnQueue:^{
+		__strong GRObserver *strongSelf = self;
 		__block NSArray *subCopy;
 		dispatch_sync(_privateQ, ^{
-			subCopy = [subscribers copy];
+			subCopy = [strongSelf->subscribers copy];
 		});
 		for (GRSubscriber *subscriber in subCopy) {
 			[subscriber error:error];
 		}
 		erroredOut = YES;
 		dispatch_sync(_privateQ, ^{
-			[subscribers removeAllObjects];
+			[strongSelf->subscribers removeAllObjects];
 		});
+		strongSelf = nil;
 	}];
 }
 
 - (void) complete {
 	[self runOnQueue:^{
+		__strong GRObserver *strongSelf = self;
 		if (!complete) {
 			__block NSArray *subCopy;
 			dispatch_sync(_privateQ, ^{
-				subCopy = [subscribers copy];
+				subCopy = [strongSelf->subscribers copy];
 			});
 			for (GRSubscriber *subscriber in subCopy) {
 				[subscriber complete];
 			}
 			complete = YES;
 			dispatch_sync(_privateQ, ^{
-				[subscribers removeAllObjects];
+				[strongSelf->subscribers removeAllObjects];
 			});
 		}
+		strongSelf = nil;
 	}];
 }
 
@@ -153,14 +165,6 @@ static dispatch_queue_t _privateQ;
 
 @end
 
-
-@interface GRSubscriber ()
-
-@property (nonatomic, copy) void (^nextBlock)(id value);
-@property (nonatomic, copy) void (^errorBlock)(NSError *error);
-@property (nonatomic, copy) void (^completeBlock)(void);
-
-@end
 
 @implementation GRSubscriber
 

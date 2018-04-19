@@ -180,9 +180,14 @@ GROConvertValue(structTypeVar, ^id(NSDictionary *dict){
 
 @property (nonatomic, strong) NSString *testProperty;
 
+@property (nonatomic, strong) GRObservable<NSString*> *raceObservable;
+@property (nonatomic, strong) GRObserver<NSString*> *raceObserver;
+
 @end
 
 @implementation GRViewController
+
+@synthesize raceObservable, raceObserver;
 
 - (void)viewDidLoad
 {
@@ -289,7 +294,7 @@ GROConvertValue(structTypeVar, ^id(NSDictionary *dict){
 	}, ^(NSError *error) {
 		NSLog(@"error: %@", error);
 	}, ^{
-		NSLog(@"complete");
+		NSLog(@"destroyQuickly(async): complete");
 	});
 	
 	destroyQuickly = nil;
@@ -305,6 +310,24 @@ GROConvertValue(structTypeVar, ^id(NSDictionary *dict){
 	self.testProperty = @"KVO Observing is cool!";
 	kvoObservable = nil;
 	self.testProperty = @"Unobserved";
+	
+	__weak GRViewController *myself = self;
+	self.raceObservable = [GRObservable withBlock:^(GRObserver *observer) {
+		myself.raceObserver = observer;
+	}];
+	self.raceObservable.name = @"raceObservable";
+	
+	self.raceObservable.subscribeWithLiterals(^(NSString *value) {
+		NSLog(@"%@", value);
+	}, ^(NSError *error) {
+		NSLog(@"raceObservable: error: %@", error);
+	}, ^{
+		myself.raceObserver = nil;
+	});
+	
+	[self.raceObserver next:@"race Value 1"];
+	[self.raceObserver next:@"race Value 2"];
+	[raceObserver complete];
 		
 	NSData *mapperData = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"mapping" withExtension:@"json"]];
 	NSError *error = nil;
