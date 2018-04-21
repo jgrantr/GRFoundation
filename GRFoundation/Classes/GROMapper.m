@@ -84,6 +84,9 @@ static GROTargetType targetType(id source) {
 }
 
 static GROSourceType sourceObjectType(id source) {
+	if (source == nil) {
+		return GROSourceTypeNull;
+	}
 	if ([source isKindOfClass:[NSString class]]) {
 		return GROSourceTypeString;
 	}

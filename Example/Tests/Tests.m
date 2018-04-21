@@ -143,6 +143,19 @@ describe(@"ConvertToJSON", ^{
 		expect(json[@"intValue"]).to.equal(@(3));
 		expect(json[@"overrideValue"]).to.equal(@(10));
 	});
+	
+	it(@"can convert nil values", ^{
+		TestSerializeClass *toSerialize = [[TestSerializeClass alloc] init];
+		toSerialize.stringValue = nil;
+		NSError *error = nil;
+		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
+		expect(json[@"stringValue"]).to.equal([NSNull null]);
+		expect(json[@"structValue"]).to.equal(nil);
+		expect(json[@"numberValue"]).to.equal(@(2));
+		expect(json[@"doubleValue"]).to.equal(@(2.0));
+		expect(json[@"intValue"]).to.equal(@(3));
+
+	});
 });
 
 describe(@"these will pass", ^{
