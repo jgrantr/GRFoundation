@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'GRFoundation'
-  s.version          = '0.9.9'
+  s.version          = '0.9.10'
   s.summary          = 'Utility extensions to the Foundation and UIKit frameworks'
 
 # This description is used to generate tags and improve search results.
@@ -20,7 +20,9 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 This collects a number of categories that flesh-out the Foundation and UIKit frameworks with some much-needed
 functionality. Includes a number of image manipulation and creation routines, as well as some helpers for
-extracting useful data about a iOS device.
+extracting useful data about a iOS device. It also includes a lightweight Observable class (along the lines of a Rx Observable) and
+a lightweight POCO (Plain Old Cocoa Object) to NSDictionary mapper, which makes it easy to turn your Objective-C objects into dictionaries
+suitable for JSON serialization.  Throw in some date utilties and a class for constructing URL query strings, and that is GRFoundation!
                        DESC
 
   s.homepage         = 'https://github.com/jgrantr/GRFoundation'

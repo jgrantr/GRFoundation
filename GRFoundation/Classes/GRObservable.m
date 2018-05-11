@@ -420,7 +420,8 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 			[_observer next:change];
 		}
 		else {
-			[_observer next:change[NSKeyValueChangeNewKey]];
+			id value = change[NSKeyValueChangeNewKey];
+			[_observer next:value != [NSNull null] ? value : nil];
 		}
 	}
 	else {
