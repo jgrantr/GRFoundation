@@ -133,6 +133,33 @@ GROConvertToJSON(overrideValue, ^id(void) {
 
 @end
 
+@interface CustomParentClass : NSObject
+
+@property (nonatomic, strong) NSString *type;
+
+@end
+
+@implementation CustomParentClass
+
+@end
+
+@interface CustomChildClass : CustomParentClass
+
+@property (nonatomic, strong) NSString *type;
+
+@end
+
+@implementation CustomChildClass
+
+- (NSString *) type {
+	return [super type];
+}
+
+- (void) setType:(NSString *)type {
+	[super setType:type];
+}
+
+@end
 
 SpecBegin(InitialSpecs)
 
@@ -204,6 +231,14 @@ describe(@"ConvertToJSON", ^{
 		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
 		expect(json[@"prop1"]).to.equal(nil);
 		expect(json[@"included"]).to.equal(@"World");
+	});
+	
+	it(@"can map re-declared properties of a child class", ^{
+		CustomChildClass *toSerialize = [[CustomChildClass alloc] init];
+		toSerialize.type = @"Tall";
+		NSError *error = nil;
+		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
+		expect(json[@"type"]).to.equal(@"Tall");
 	});
 });
 

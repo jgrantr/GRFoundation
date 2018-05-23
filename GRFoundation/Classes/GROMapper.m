@@ -492,10 +492,10 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 	NSSet<NSString*> *toExclude = nil;
 	unsigned int count = 0;
 	
-	if (class_respondsToSelector(customClass, @selector(excludePropertiesFromJSON))) {
+	if ([customClass respondsToSelector:@selector(excludePropertiesFromJSON)]) {
 		toExclude = [customClass excludePropertiesFromJSON];
 	}
-	else if (class_respondsToSelector(customClass, @selector(includePropertiesInJSON))) {
+	else if ([customClass respondsToSelector:@selector(includePropertiesInJSON)]) {
 		toInclude = [customClass includePropertiesInJSON];
 	}
 	
