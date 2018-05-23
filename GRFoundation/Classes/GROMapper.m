@@ -488,13 +488,29 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 
 - (NSMutableDictionary *) convertCustomObject:(id)customObj {
 	Class customClass = [customObj class];
+	NSSet<NSString*> *toInclude = nil;
+	NSSet<NSString*> *toExclude = nil;
 	unsigned int count = 0;
+	
+	if (class_respondsToSelector(customClass, @selector(excludePropertiesFromJSON))) {
+		toExclude = [customClass excludePropertiesFromJSON];
+	}
+	else if (class_respondsToSelector(customClass, @selector(includePropertiesInJSON))) {
+		toInclude = [customClass includePropertiesInJSON];
+	}
+	
 	objc_property_t *propList = class_copyPropertyList(customClass, &count);
 	NSMutableDictionary *convertedObj = [NSMutableDictionary dictionaryWithCapacity:count];
 	for (int i = 0; i < count; i++) {
 		objc_property_t property = propList[i];
-		const char *attr = property_getAttributes(property);
 		NSString *propName = [NSString stringWithUTF8String:property_getName(property)];
+		if (toInclude != nil && [toInclude containsObject:propName] == NO) {
+			continue;
+		}
+		if (toExclude != nil && [toExclude containsObject:propName] == YES) {
+			continue;
+		}
+		const char *attr = property_getAttributes(property);
 		GROSourceType propType = sourceTypeFromAttributes(attr);
 		if (propType == GROSourceTypeInconvertibleValue) {
 			DDLogInfo(@"property '%@' (@encode-type '%s') from class '%@' cannot be converted to JSON", propName, attr, NSStringFromClass(customClass));

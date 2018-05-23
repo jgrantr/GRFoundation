@@ -103,6 +103,35 @@ GROConvertToJSON(overrideValue, ^id(void) {
 
 @end
 
+@interface CustomClassWithExclusions : NSObject
+
+@property (nonatomic, strong) NSString *prop1;
+@property (nonatomic, strong) NSString *excluded;
+
+@end
+
+@implementation CustomClassWithExclusions
+
++ (NSSet<NSString*> *) excludePropertiesFromJSON {
+	return [NSSet setWithArray:@[NSStringFromSelector(@selector(excluded))]];
+}
+
+@end
+
+@interface CustomClassWithInclusions : NSObject
+
+@property (nonatomic, strong) NSString *prop1;
+@property (nonatomic, strong) NSString *included;
+
+@end
+
+@implementation CustomClassWithInclusions
+
++ (NSSet<NSString*> *) includePropertiesInJSON {
+	return [NSSet setWithArray:@[NSStringFromSelector(@selector(included))]];
+}
+
+@end
 
 
 SpecBegin(InitialSpecs)
@@ -155,6 +184,26 @@ describe(@"ConvertToJSON", ^{
 		expect(json[@"doubleValue"]).to.equal(@(2.0));
 		expect(json[@"intValue"]).to.equal(@(3));
 
+	});
+	
+	it(@"can exclude properties", ^{
+		CustomClassWithExclusions *toSerialize = [[CustomClassWithExclusions alloc] init];
+		toSerialize.prop1 = @"Hello";
+		toSerialize.excluded = @"World";
+		NSError *error = nil;
+		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
+		expect(json[@"excluded"]).to.equal(nil);
+		expect(json[@"prop1"]).to.equal(@"Hello");
+	});
+	
+	it(@"can only include certain properties", ^{
+		CustomClassWithInclusions *toSerialize = [[CustomClassWithInclusions alloc] init];
+		toSerialize.prop1 = @"Hello";
+		toSerialize.included = @"World";
+		NSError *error = nil;
+		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
+		expect(json[@"prop1"]).to.equal(nil);
+		expect(json[@"included"]).to.equal(@"World");
 	});
 });
 

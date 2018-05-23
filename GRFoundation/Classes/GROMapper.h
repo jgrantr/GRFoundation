@@ -41,9 +41,38 @@ typedef NS_ENUM(NSInteger, GROMapperErrorCode) {
 
 #define GROCustomMapping(key, block) -(void(^)(id)) GROMapperCustomMappingBlockFor_##key { return block; }
 
+// mapping macros for object -> dict
+
 #define GROConvertToJSON(property, block) XGROConvertToJSON(property, block)
 #define XGROConvertToJSON(property, block) -(id(^)(void)) GROMapperConvertToJSONFor_##property { return block; }
 
+
+/**
+ A protocol for configuring only certain properties of a class to be included or excluded when converting to JSON.
+ You should never define both of these methods for a given class. excludePropertiesFromJSON will be preferred and used if both are defined.
+ 
+ Thie protocol can either be adopted formally, or informally.  Either way, the selectors will be called if they exist.
+ */
+@protocol GROMapperConfig <NSObject>
+
+@optional
+
+/**
+ Return a set of properties that should be excluded when mapping to JSON.
+
+ @return the set of property names to exclude from the JSON
+ */
++ (NSSet<NSString*> *) excludePropertiesFromJSON;
+
+/**
+ Return a set of properties that should be included in the JSON when performing a mapping.  If this method returns non-nil, ONLY
+ the properties in this set will be included (which is sometimes easier when you have only 1 or two properties you want to include.
+
+ @return the set of property names to include in the JSON
+ */
++ (NSSet<NSString*> *) includePropertiesInJSON;
+
+@end
 
 /**
   * Class for mapping a JSON object (aka, an NSDictionary or NSArray) to an Objective-C object.
