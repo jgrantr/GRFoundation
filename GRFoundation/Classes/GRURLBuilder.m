@@ -86,7 +86,7 @@ static NSMutableDictionary * parseArgs(NSString *queryString) {
 - (void) setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key {
 	if ([obj isKindOfClass:[NSDictionary class]]) {
 		[(NSDictionary *)obj enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-			[params setObject:[obj description] forKey:key];
+			[self->params setObject:[obj description] forKey:key];
 		}];
 	}
 	else {

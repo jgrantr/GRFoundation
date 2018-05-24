@@ -151,13 +151,7 @@ GROConvertToJSON(overrideValue, ^id(void) {
 
 @implementation CustomChildClass
 
-- (NSString *) type {
-	return [super type];
-}
-
-- (void) setType:(NSString *)type {
-	[super setType:type];
-}
+@dynamic type;
 
 @end
 
@@ -240,6 +234,72 @@ describe(@"ConvertToJSON", ^{
 		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
 		expect(json[@"type"]).to.equal(@"Tall");
 	});
+});
+
+describe(@"GRKVOObservable", ^{
+	
+	it(@"can deliver initial values upon subscription", ^{
+		TestSerializeClass *toObserve = [[TestSerializeClass alloc] init];
+		__block GRKVObservable<NSString*> *observable = [GRKVObservable forObject:toObserve keyPath:@"stringValue"];
+		__block NSString *initialValue = nil;
+		observable.subscribeWithLiterals(^(NSString *value) {
+			initialValue = value;
+		}, nil, nil);
+		waitUntil(^(DoneCallback done) {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				expect(initialValue).to.equal(@"Hello World");
+			});
+			observable = nil;
+			done();
+		});
+	});
+	
+	it(@"can deliver latest values upon subscription", ^{
+		TestSerializeClass *toObserve = [[TestSerializeClass alloc] init];
+		GRKVObservable<NSString*> *observable = [GRKVObservable forObject:toObserve keyPath:@"stringValue"];
+		GRSubscriber<NSString *> *sub1 = observable.subscribeWithLiterals(^(NSString *value) {
+			
+		}, nil, nil);
+		[sub1 unsubscribe];
+		toObserve.stringValue = @"2nd Value";
+		__block NSString *currentValue = nil;
+		observable.subscribeWithLiterals(^(NSString *value) {
+			currentValue = value;
+		}, nil, nil);
+		expect(currentValue).to.equal(@"2nd Value");
+	});
+});
+
+describe(@"GRObservable", ^{
+	
+	it(@"can deliver latest values upon subscription", ^{
+		__block GRObserver<NSString*> *myObserver = nil;
+		GRObservable<NSString*> *observable = [GRObservable withBlock:^(GRObserver *observer) {
+			myObserver = observer;
+		}];
+		observable.deliverCurrentValueUponSubscription = YES;
+		GRSubscriber<NSString*> *sub1 = observable.subscribeWithLiterals(^(NSString *value) {
+			
+		}, nil, nil);
+		[sub1 unsubscribe];
+		[myObserver next:@"Value 1"];
+		__block NSString *value1 = nil;
+		GRSubscriber<NSString*> *sub2 = observable.subscribeWithLiterals(^(NSString *value) {
+			value1 = value;
+		}, nil, nil);
+		expect(value1).to.equal(@"Value 1");
+		[sub2 unsubscribe];
+		[myObserver next:@"Value 2"];
+		__block NSString *value2 = nil;
+		GRSubscriber<NSString *> *sub3 = observable.subscribeWithLiterals(^(NSString *value) {
+			value2 = value;
+		}, nil, nil);
+		expect(value2).to.equal(@"Value 2");
+		[sub3 unsubscribe];
+		observable = nil;
+		myObserver = nil;
+	});
+	
 });
 
 describe(@"these will pass", ^{

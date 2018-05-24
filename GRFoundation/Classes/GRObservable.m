@@ -38,7 +38,9 @@ static dispatch_queue_t _privateQ;
 }
 
 @property (nonatomic) BOOL asynchronous;
+@property (nonatomic) BOOL deliverCurrentValueUponSubscription;
 @property (nonatomic, strong) dispatch_queue_t dispatchQueue;
+@property (nonatomic, strong) id latestValue;
 
 - (void) addSubscriber:(GRSubscriber *)subscriber;
 - (void) removeSubscriber:(GRSubscriber *)subscriber;
@@ -52,6 +54,7 @@ static dispatch_queue_t _privateQ;
 	if (self) {
 		subscribers = [NSMutableArray arrayWithCapacity:1];
 		isMainQueue = (self.dispatchQueue == nil || self.dispatchQueue == dispatch_get_main_queue());
+		_deliverCurrentValueUponSubscription = NO;
 	}
 	return self;
 }
@@ -73,14 +76,21 @@ static dispatch_queue_t _privateQ;
 - (void) addSubscriber:(GRSubscriber *)subscriber {
 	dispatch_sync(_privateQ, ^{
 		subscriber.parent = self;
-		[subscribers addObject:subscriber];
+		[self->subscribers addObject:subscriber];
 	});
+	if (self.deliverCurrentValueUponSubscription) {
+		[self runOnQueue:^{
+			__strong GRObserver *strongSelf = self;
+			[subscriber next:strongSelf.latestValue];
+			strongSelf = nil;
+		}];
+	}
 }
 
 - (void) removeSubscriber:(GRSubscriber *)subscriber {
 	dispatch_sync(_privateQ, ^{
 		subscriber.parent = nil;
-		[subscribers removeObject:subscriber];
+		[self->subscribers removeObject:subscriber];
 	});
 }
 
@@ -103,6 +113,9 @@ static dispatch_queue_t _privateQ;
 - (void) next:(id)value {
 	[self runOnQueue:^{
 		__strong GRObserver *strongSelf = self;
+		if (strongSelf.deliverCurrentValueUponSubscription) {
+			strongSelf.latestValue = value;
+		}
 		__block NSArray *subCopy;
 		dispatch_sync(_privateQ, ^{
 			subCopy = [strongSelf->subscribers copy];
@@ -124,7 +137,7 @@ static dispatch_queue_t _privateQ;
 		for (GRSubscriber *subscriber in subCopy) {
 			[subscriber error:error];
 		}
-		erroredOut = YES;
+		strongSelf->erroredOut = YES;
 		dispatch_sync(_privateQ, ^{
 			[strongSelf->subscribers removeAllObjects];
 		});
@@ -135,7 +148,7 @@ static dispatch_queue_t _privateQ;
 - (void) complete {
 	[self runOnQueue:^{
 		__strong GRObserver *strongSelf = self;
-		if (!complete) {
+		if (!strongSelf->complete) {
 			__block NSArray *subCopy;
 			dispatch_sync(_privateQ, ^{
 				subCopy = [strongSelf->subscribers copy];
@@ -143,7 +156,7 @@ static dispatch_queue_t _privateQ;
 			for (GRSubscriber *subscriber in subCopy) {
 				[subscriber complete];
 			}
-			complete = YES;
+			strongSelf->complete = YES;
 			dispatch_sync(_privateQ, ^{
 				[strongSelf->subscribers removeAllObjects];
 			});
@@ -260,11 +273,21 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 	};
 }
 
+#pragma mark - setters
+
+- (void) setDeliverCurrentValueUponSubscription:(BOOL)deliverCurrentValueUponSubscription {
+	_deliverCurrentValueUponSubscription = deliverCurrentValueUponSubscription;
+	_observer.deliverCurrentValueUponSubscription = deliverCurrentValueUponSubscription;
+}
+
+#pragma mark - init and dealloc
+
 - (id) init {
 	self = [super init];
 	if (self) {
 		self.asynchronous = NO;
 		self.dispatchQueue = dispatch_get_main_queue();
+		self.deliverCurrentValueUponSubscription = NO;
 	}
 	return self;
 }
@@ -278,13 +301,17 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 	_observer = nil;
 }
 
+#pragma mark - Public API
+
 - (GRSubscriber<id> *(^)(id nextOrSubscriber))subscribe {
 	return ^GRSubscriber*(id nextOrSubscriber) {
 		BOOL shouldExecuteBlock = NO;
-		if (!_observer) {
-			_observer = [[GRObserver alloc] init];
-			_observer.asynchronous = self.asynchronous;
-			_observer.dispatchQueue = self.dispatchQueue;
+		if (!self->_observer) {
+			GRObserver *observer = [[GRObserver alloc] init];
+			observer.asynchronous = self.asynchronous;
+			observer.dispatchQueue = self.dispatchQueue;
+			observer.deliverCurrentValueUponSubscription = self.deliverCurrentValueUponSubscription;
+			self->_observer = observer;
 			shouldExecuteBlock = YES;
 		}
 		GRSubscriber *toReturn = nil;
@@ -296,9 +323,9 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 			sub.nextBlock = nextOrSubscriber;
 			toReturn = sub;
 		}
-		if (toReturn) [_observer addSubscriber:toReturn];
+		if (toReturn) [self->_observer addSubscriber:toReturn];
 		if (shouldExecuteBlock && self.block) {
-			self.block(_observer);
+			self.block(self->_observer);
 			self.block = nil;
 		}
 		return toReturn;
@@ -372,11 +399,13 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 @interface GRKVObservable ()
 {
 	BOOL isRaw;
+	BOOL isInitialValue;
 }
 
 @property (nonatomic, strong) id observing;
 @property (nonatomic, strong) NSString *keyPath;
 @property (nonatomic) BOOL isRaw;
+@property (nonatomic) id initialValue;
 
 @end
 
@@ -400,6 +429,14 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 	return [self forObject:object keyPath:keypath isRaw:YES];
 }
 
+- (instancetype) init {
+	self = [super init];
+	if (self) {
+		self.deliverCurrentValueUponSubscription = YES;
+	}
+	return self;
+}
+
 - (void) dealloc {
 	DDLogDebug(@"dealloc of GRKVObservable<%p> (%@) called", self, self.name);
 	self.observing = nil;
@@ -410,18 +447,45 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 	[self willChangeValueForKey:@"observing"];
 	_observing = observing;
 	[self didChangeValueForKey:@"observing"];
-	[observing addObserver:self forKeyPath:self.keyPath options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew context:(__bridge void * _Nullable)(self.keyPath)];
+	isInitialValue = YES;
+	[observing addObserver:self forKeyPath:self.keyPath options:NSKeyValueObservingOptionOld|NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial context:(__bridge void * _Nullable)(self.keyPath)];
+	isInitialValue = NO;
+}
+
+- (GRSubscriber<id> *(^)(id nextOrSubscriber))subscribe {
+	BOOL sendInitialAlong = NO;
+	if (_observer == nil) {
+		// this is the first time, we will want to do something special
+		sendInitialAlong = YES;
+	}
+	GRSubscriber<id> *(^toReturn)(id nextOrSubscriber) = [super subscribe];
+	if (sendInitialAlong) {
+		dispatch_async(self.dispatchQueue, ^{
+			[self->_observer next:self.initialValue];
+			self.initialValue = nil;
+		});
+	}
+	return toReturn;
 }
 
 - (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
 {
 	if (context == (__bridge void * _Nullable)(self.keyPath)) {
 		if (isRaw) {
+			if (isInitialValue) {
+				self.initialValue = change;
+			}
 			[_observer next:change];
 		}
 		else {
 			id value = change[NSKeyValueChangeNewKey];
-			[_observer next:value != [NSNull null] ? value : nil];
+			if (value == [NSNull null]) {
+				value = nil;
+			}
+			if (isInitialValue) {
+				self.initialValue = value;
+			}
+			[_observer next:value];
 		}
 	}
 	else {

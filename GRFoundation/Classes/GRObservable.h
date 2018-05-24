@@ -40,6 +40,7 @@ typedef void (^GRObservableCompleteBlock)(void);
 + (GRObservable<ObjectType>* (^)(void (^)(GRObserver<ObjectType> *observer)))observable;
 
 @property (nonatomic) BOOL asynchronous;
+@property (nonatomic) BOOL deliverCurrentValueUponSubscription;
 @property (nonatomic, strong) dispatch_queue_t dispatchQueue;
 @property (nonatomic, strong) NSString *name;
 
@@ -59,6 +60,14 @@ typedef void (^GRObservableCompleteBlock)(void);
 
 @end
 
+/**
+ * @brief A subclass of GRObservable specifically for doing KVO observing.
+ * @discussion Please note the following:
+ *    1) instances of this class strongly-retain the object they are observing.  To release the retained object that is being observed,
+ *      simply make sure that the instance of this class is released.
+ *    2) instances of GRKVOObservable deliver the latest value when you subscribe by default.  If for some reason you don't want this behavior,
+ *      set the value of <pre>deliverCurrentValueUponSubscription</pre> to <pre>NO</pre>.
+ */
 @interface GRKVObservable<__covariant ObjectType> : GRObservable
 
 + (GRKVObservable<ObjectType> *) forObject:(id<NSObject>)object keyPath:(NSString *)keypath;
