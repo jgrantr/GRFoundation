@@ -35,6 +35,7 @@ static dispatch_queue_t _privateQ;
 	BOOL erroredOut;
 	BOOL complete;
 	BOOL isMainQueue;
+	BOOL nextCalledAtLeastOnce;
 }
 
 @property (nonatomic) BOOL asynchronous;
@@ -78,7 +79,7 @@ static dispatch_queue_t _privateQ;
 		subscriber.parent = self;
 		[self->subscribers addObject:subscriber];
 	});
-	if (self.deliverCurrentValueUponSubscription) {
+	if (self.deliverCurrentValueUponSubscription && nextCalledAtLeastOnce) {
 		[self runOnQueue:^{
 			__strong GRObserver *strongSelf = self;
 			[subscriber next:strongSelf.latestValue];
@@ -111,6 +112,7 @@ static dispatch_queue_t _privateQ;
 }
 
 - (void) next:(id)value {
+	nextCalledAtLeastOnce = YES;
 	[self runOnQueue:^{
 		__strong GRObserver *strongSelf = self;
 		if (strongSelf.deliverCurrentValueUponSubscription) {
