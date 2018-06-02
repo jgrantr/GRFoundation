@@ -70,8 +70,16 @@ typedef void (^GRObservableCompleteBlock)(void);
  */
 @interface GRKVObservable<__covariant ObjectType> : GRObservable
 
-+ (GRKVObservable<ObjectType> *) forObject:(id<NSObject>)object keyPath:(NSString *)keypath;
-+ (GRKVObservable<NSDictionary<NSKeyValueChangeKey,id> *> *) rawObservableFor:(id<NSObject>)object keyPath:(NSString *)keypath;
++ (GRKVObservable<ObjectType> *) forObject:(id)object keyPath:(NSString *)keypath;
++ (GRKVObservable<NSDictionary<NSKeyValueChangeKey,id> *> *) rawObservableFor:(id)object keyPath:(NSString *)keypath;
+
+
+/**
+ Changes the object being observed to objectToObserver
+
+ @param objectToObserve the object to be observed
+ */
+- (void) updateObservedObject:(id)objectToObserve;
 
 /**
   * An observer attached to Key-Value Observing never actually completes, so this method is provided to complete

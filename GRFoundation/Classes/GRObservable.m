@@ -454,6 +454,10 @@ static DDLogLevel GRObs_ddLogLevel = DDLogLevelInfo;
 	isInitialValue = NO;
 }
 
+- (void) updateObservedObject:(id)objectToObserve {
+	self.observing = objectToObserve;
+}
+
 - (GRSubscriber<id> *(^)(id nextOrSubscriber))subscribe {
 	BOOL sendInitialAlong = NO;
 	if (_observer == nil) {
