@@ -13,7 +13,9 @@
 #import <GRFoundation/UIImage+ColorReplacement.h>
 #import <GRFoundation/GRObservable.h>
 #import <GRFoundation/UIColor+HexColor.h>
+#import <GRFoundation/NSData+GRExtensions.h>
 #import <GRFoundation/NSDate+GRExtensions.h>
+#import <GRFoundation/NSString+GRExtensions.h>
 #import <GRFoundation/GRJson.h>
 #import <GRFoundation/GRJsonParser.h>
 #import <GRFoundation/GROMapper.h>

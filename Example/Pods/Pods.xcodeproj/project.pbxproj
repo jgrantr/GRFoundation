@@ -92,6 +92,10 @@
 		8EB971505805B7D6A13052E3A885CA06 /* SPTExample.h in Headers */ = {isa = PBXBuildFile; fileRef = A398287A02676564864777474992104B /* SPTExample.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8F990515E868D90C15D2148DD1A22403 /* EXPMatchers+haveCountOf.h in Headers */ = {isa = PBXBuildFile; fileRef = DC7D6D280F077E7A206661659F153FFA /* EXPMatchers+haveCountOf.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		90492A5173DF404587DC1F40A9A79D90 /* SPTSharedExampleGroups.h in Headers */ = {isa = PBXBuildFile; fileRef = E2787DA6652F66AD39DF99B47C3581F4 /* SPTSharedExampleGroups.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		93073CB8211624D300D85DB7 /* NSData+GRExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 93073CB6211624D300D85DB7 /* NSData+GRExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		93073CB9211624D300D85DB7 /* NSData+GRExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 93073CB7211624D300D85DB7 /* NSData+GRExtensions.m */; };
+		93073CBC211625C600D85DB7 /* NSString+GRExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 93073CBA211625C600D85DB7 /* NSString+GRExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		93073CBD211625C600D85DB7 /* NSString+GRExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 93073CBB211625C600D85DB7 /* NSString+GRExtensions.m */; };
 		9360B1A0A3E237317BD57AE81CC84EDB /* GRJson.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FA59DC4C483E110A78AE55EDD912BC3 /* GRJson.m */; };
 		98571BE17A46245CA1717CF9157A0807 /* EXPMatchers+beTruthy.m in Sources */ = {isa = PBXBuildFile; fileRef = 056C5AFD4D83D79F7B2A763EAD4D3AD9 /* EXPMatchers+beTruthy.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		99E6D51A8A4E3FFB7601D182D995A3BA /* ExpectaObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E68BA56866126F0D288871A9C4E240 /* ExpectaObject.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -331,6 +335,10 @@
 		91EDC0AC88EF0F6BAD498797E3BFBD9B /* EXPMatchers+beginWith.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "EXPMatchers+beginWith.h"; path = "Expecta/Matchers/EXPMatchers+beginWith.h"; sourceTree = "<group>"; };
 		9293EAB403FE2F5395D1E1EE14326BBA /* EXPMatchers.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = EXPMatchers.h; path = Expecta/Matchers/EXPMatchers.h; sourceTree = "<group>"; };
 		92BEB50717B62C096039AAB0F5D8909B /* Pods-GRFoundation_Tests-resources.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-GRFoundation_Tests-resources.sh"; sourceTree = "<group>"; };
+		93073CB6211624D300D85DB7 /* NSData+GRExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "NSData+GRExtensions.h"; path = "GRFoundation/Classes/NSData+GRExtensions.h"; sourceTree = "<group>"; };
+		93073CB7211624D300D85DB7 /* NSData+GRExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "NSData+GRExtensions.m"; path = "GRFoundation/Classes/NSData+GRExtensions.m"; sourceTree = "<group>"; };
+		93073CBA211625C600D85DB7 /* NSString+GRExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "NSString+GRExtensions.h"; path = "GRFoundation/Classes/NSString+GRExtensions.h"; sourceTree = "<group>"; };
+		93073CBB211625C600D85DB7 /* NSString+GRExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "NSString+GRExtensions.m"; path = "GRFoundation/Classes/NSString+GRExtensions.m"; sourceTree = "<group>"; };
 		93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		957DA834845AAFAC2681493665F54E8C /* GRFoundation-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "GRFoundation-dummy.m"; sourceTree = "<group>"; };
 		95F30F64BE53A1886B55DBE424E6089D /* GRFoundation.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = GRFoundation.h; path = GRFoundation/Classes/GRFoundation.h; sourceTree = "<group>"; };
@@ -696,8 +704,12 @@
 				C40096F41E98965C7A3A0AD27C7CA300 /* GRURLBuilder.m */,
 				BEDF20E5B5A8129A2CF52D61141D4BC1 /* LoadableCategory.h */,
 				AD58FB1E89F04D5CA89DA60B294E546A /* Logging.h */,
+				93073CB6211624D300D85DB7 /* NSData+GRExtensions.h */,
+				93073CB7211624D300D85DB7 /* NSData+GRExtensions.m */,
 				DDC25E09FE76E6791CDBD2E9A98D73B9 /* NSDate+GRExtensions.h */,
 				F4CFA30BFB9E41C12D2FD912BD1DAE09 /* NSDate+GRExtensions.m */,
+				93073CBA211625C600D85DB7 /* NSString+GRExtensions.h */,
+				93073CBB211625C600D85DB7 /* NSString+GRExtensions.m */,
 				37973D44F0EEA32360BDCB3AAD407391 /* UIColor+HexColor.h */,
 				9ED00220DFF2CAE3C59F7856262C9B11 /* UIColor+HexColor.m */,
 				91272B180D0623B1E896D5148C2B5C75 /* UIDevice+Hardware.h */,
@@ -972,10 +984,12 @@
 				7853243C68CFE4A9E9D553C0869DCBD4 /* GRReachability.h in Headers */,
 				323A1426FB192938C8962B39D4C2942C /* GRURLBuilder.h in Headers */,
 				C9D1AD9D91893B4A36012A3FCD03BA5B /* LoadableCategory.h in Headers */,
+				93073CBC211625C600D85DB7 /* NSString+GRExtensions.h in Headers */,
 				AC0E1DC620D5566B925164699432D913 /* Logging.h in Headers */,
 				F3F1F93A5B351597ABEF2416DAD214DA /* NSDate+GRExtensions.h in Headers */,
 				7481002DBB6F991A2249C697B94EDFC5 /* UIColor+HexColor.h in Headers */,
 				398F80BDB50A6017629FFA294FA0747E /* UIDevice+Hardware.h in Headers */,
+				93073CB8211624D300D85DB7 /* NSData+GRExtensions.h in Headers */,
 				FC1C2F0A4649C4B8C884956A6206C4D9 /* UIImage+ColorReplacement.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1185,10 +1199,12 @@
 				887061785B03FEBD6EB9B5D34958BD2B /* GROMapper.m in Sources */,
 				23EB01091893D768449052677C6868F1 /* GRReachability.m in Sources */,
 				BFCEB4E8CE258DE1C4B4ABF895B8CB53 /* GRURLBuilder.m in Sources */,
+				93073CB9211624D300D85DB7 /* NSData+GRExtensions.m in Sources */,
 				A2F8D9FCD40D4E94CAF1E3E98DD153AA /* NSDate+GRExtensions.m in Sources */,
 				097A64F13127A5624719062D054D10AB /* UIColor+HexColor.m in Sources */,
 				0B2038A14D39BD8622BB17A764A59B01 /* UIDevice+Hardware.m in Sources */,
 				FE7542BAC4B856E29259771FAC074001 /* UIImage+ColorReplacement.m in Sources */,
+				93073CBD211625C600D85DB7 /* NSString+GRExtensions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
