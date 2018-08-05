@@ -11,7 +11,7 @@
 @implementation NSString (GRExtensions)
 
 - (NSString *) hmacSHA1UsingSecret:(NSData *)secret {
-	return [[[self dataUsingEncoding:NSUTF8StringEncoding] hmacSHA1UsingSecret:secret] base64EncodedStringWithOptions:0];
+	return [[[self dataUsingEncoding:NSASCIIStringEncoding] hmacSHA1UsingSecret:secret] base64EncodedStringWithOptions:0];
 }
 
 @end
