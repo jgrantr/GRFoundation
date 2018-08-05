@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'GRFoundation'
-  s.version          = '0.9.15'
+  s.version          = '0.9.16'
   s.summary          = 'Utility extensions to the Foundation and UIKit frameworks'
 
 # This description is used to generate tags and improve search results.

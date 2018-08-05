@@ -12,7 +12,7 @@
 @implementation NSData (GRExtensions)
 
 - (NSMutableData *) hmacSHA1UsingSecret:(NSData *)secret {
-	NSMutableData *result = [NSMutableData dataWithCapacity:CC_SHA1_DIGEST_LENGTH];
+	NSMutableData *result = [NSMutableData dataWithLength:CC_SHA1_DIGEST_LENGTH];
 	CCHmac(kCCHmacAlgSHA1, [secret bytes], secret.length, [self bytes], self.length, [result mutableBytes]);
 	return result;
 }
