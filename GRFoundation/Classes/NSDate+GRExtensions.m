@@ -31,14 +31,8 @@ static char keyComponents;
 	return ([self compare:anotherDate] == NSOrderedDescending);
 }
 
-- (NSDateComponents *) components {
-	NSDateComponents *comps = objc_getAssociatedObject(self, &keyComponents);
-	if (comps == nil) {
-		NSCalendar *cal = [NSCalendar currentCalendar];
-		comps = [cal components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitWeekOfMonth|NSCalendarUnitWeekOfYear|NSCalendarUnitWeekday|NSCalendarUnitWeekdayOrdinal|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:self];
-		objc_setAssociatedObject(self, &keyComponents, comps, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-	}
-	return comps;
+- (NSCalendarUnit) allComponents {
+	return NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitWeekOfMonth|NSCalendarUnitWeekOfYear|NSCalendarUnitWeekday|NSCalendarUnitWeekdayOrdinal|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond;
 }
 
 
@@ -65,12 +59,12 @@ static char keyComponents;
 		NSString *languageCode = [locale objectForKey:NSLocaleLanguageCode];
 		NSString *dateString = nil;
 		if ([languageCode caseInsensitiveCompare:@"en"] == NSOrderedSame) {
-			dateString = [value stringByReplacingOccurrencesOfString:@"${suffix}" withString:@""];
+			NSInteger day = [cal component:NSCalendarUnitDay fromDate:self];
+			NSString *suffix = suffixes[day];
+			dateString = [value stringByReplacingOccurrencesOfString:@"${suffix}" withString:suffix];
 		}
 		else {
-			NSDateComponents *comps = [self components];
-			NSString *suffix = [suffixes objectAtIndex:comps.day];
-			dateString = [value stringByReplacingOccurrencesOfString:@"${suffix}" withString:suffix];
+			dateString = [value stringByReplacingOccurrencesOfString:@"${suffix}" withString:@""];
 		}
 		return dateString;
 	}

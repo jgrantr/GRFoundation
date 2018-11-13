@@ -302,17 +302,6 @@ describe(@"GRObservable", ^{
 	
 });
 
-describe(@"HMAC-SHA1", ^{
-	it(@"can create HMAC-SHA1 signatures", ^{
-		NSString *base64Secret = [[@"***REMOVED***" stringByReplacingOccurrencesOfString:@"-" withString:@"+"] stringByReplacingOccurrencesOfString:@"_" withString:@"/"];
-		NSData *secret = [[NSData alloc] initWithBase64EncodedString:base64Secret options:0];
-		NSString *urlPortion = @"/maps/api/staticmap?size=96x96&zoom=18&center=40.382%2C-111.732&maptype=satellite&key=***REMOVED***&scale=2";
-		NSString *base64NonSafe = [urlPortion hmacSHA1UsingSecret:secret];
-		NSString *base64WebSafe = [[base64NonSafe stringByReplacingOccurrencesOfString:@"+" withString:@"-"] stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
-		expect(base64WebSafe).to.equal(@"zAMUC8cOGbDJXUi6678709jxeaU=");
-	});
-});
-
 describe(@"these will pass", ^{
     
     it(@"can do maths", ^{
