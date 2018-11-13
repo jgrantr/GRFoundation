@@ -7,6 +7,19 @@
 //
 
 #import "NSDate+GRExtensions.h"
+#import <objc/runtime.h>
+
+static dispatch_queue_t dispatchQueue() {
+	static dispatch_queue_t queue;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		queue = dispatch_queue_create("net.mr-r.NSDateGRExtensions.queue", NULL);
+	});
+	return queue;
+}
+
+static char keyComponents;
+
 
 @implementation NSDate (GRExtensions)
 
@@ -16,6 +29,84 @@
 
 - (BOOL) isLaterThan:(NSDate *)anotherDate {
 	return ([self compare:anotherDate] == NSOrderedDescending);
+}
+
+- (NSDateComponents *) components {
+	NSDateComponents *comps = objc_getAssociatedObject(self, &keyComponents);
+	if (comps == nil) {
+		NSCalendar *cal = [NSCalendar currentCalendar];
+		comps = [cal components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitWeekOfMonth|NSCalendarUnitWeekOfYear|NSCalendarUnitWeekday|NSCalendarUnitWeekdayOrdinal|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:self];
+		objc_setAssociatedObject(self, &keyComponents, comps, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+	}
+	return comps;
+}
+
+
+- (NSString *) toRelativeDateTime {
+	NSDate *now = [NSDate date];
+	NSCalendar *cal = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+	NSUInteger units = NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
+	NSDateComponents *components = [cal components:units fromDate:self toDate:now options:0];
+	if (components.day >= 2) {
+		static NSDateFormatter *longAgo;
+		static NSArray *suffixes;
+		static dispatch_once_t onceToken;
+		dispatch_once(&onceToken, ^{
+			longAgo = [[NSDateFormatter alloc] init];
+			longAgo.dateFormat = [NSString stringWithFormat:NSLocalizedStringWithDefaultValue(@"longAgo", nil, [NSBundle mainBundle], @"MMM d'${suffix} at' %@", @"Should ready something like 'July 3rd at 3:45 PM"), [NSDateFormatter dateFormatFromTemplate:@"jj:mm" options:0 locale:[NSLocale autoupdatingCurrentLocale]]];
+			NSString *suffix_string = @"|st|nd|rd|th|th|th|th|th|th|th|th|th|th|th|th|th|th|th|th|th|st|nd|rd|th|th|th|th|th|th|th|st";
+			suffixes = [suffix_string componentsSeparatedByString: @"|"];
+		});
+		__block NSString *value = nil;
+		dispatch_sync(dispatchQueue(), ^{
+			value = [longAgo stringFromDate:self];
+		});
+		NSLocale *locale = [NSLocale autoupdatingCurrentLocale];
+		NSString *languageCode = [locale objectForKey:NSLocaleLanguageCode];
+		NSString *dateString = nil;
+		if ([languageCode caseInsensitiveCompare:@"en"] == NSOrderedSame) {
+			dateString = [value stringByReplacingOccurrencesOfString:@"${suffix}" withString:@""];
+		}
+		else {
+			NSDateComponents *comps = [self components];
+			NSString *suffix = [suffixes objectAtIndex:comps.day];
+			dateString = [value stringByReplacingOccurrencesOfString:@"${suffix}" withString:suffix];
+		}
+		return dateString;
+	}
+	else if (components.day == 1) {
+		static NSDateFormatter *yesterdayRelative;
+		static dispatch_once_t onceToken;
+		dispatch_once(&onceToken, ^{
+			yesterdayRelative = [[NSDateFormatter alloc] init];
+			yesterdayRelative.dateFormat = [NSString stringWithFormat:NSLocalizedStringWithDefaultValue(@"yesterdayRelative", nil, [NSBundle mainBundle], @"'Yesterday at' %@", @"Should read something like 'Yesterday at 12:31 PM'"), [NSDateFormatter dateFormatFromTemplate:@"jj:mm" options:0 locale:[NSLocale autoupdatingCurrentLocale]]];
+		});
+		__block NSString *value = nil;
+		dispatch_sync(dispatchQueue(), ^{
+			value = [yesterdayRelative stringFromDate:self];
+		});
+		return value;
+	}
+	else if (components.hour >= 1) {
+		static NSDateFormatter *todayRelative;
+		static dispatch_once_t onceToken;
+		dispatch_once(&onceToken, ^{
+			todayRelative = [[NSDateFormatter alloc] init];
+			todayRelative.dateFormat = [NSString stringWithFormat:NSLocalizedStringWithDefaultValue(@"todayRelative", nil, [NSBundle mainBundle], @"'Today at' %@", @"Should read something like 'Today at 12:31 PM'"), [NSDateFormatter dateFormatFromTemplate:@"jj:mm" options:0 locale:[NSLocale autoupdatingCurrentLocale]]];
+		});
+		__block NSString *value = nil;
+		dispatch_sync(dispatchQueue(), ^{
+			value = [todayRelative stringFromDate:self];
+		});
+		return value;
+	}
+	else if (components.minute >= 1) {
+		return [NSString stringWithFormat:components.minute == 1 ? NSLocalizedStringWithDefaultValue(@"minuteAgo", nil, [NSBundle mainBundle], @"%ld minute ago", nil) : NSLocalizedStringWithDefaultValue(@"minutesAgo", nil, [NSBundle mainBundle], @"%ld minutes ago", nil), components.minute];
+	}
+	else {
+		return NSLocalizedStringWithDefaultValue(@"justNow", nil, [NSBundle mainBundle], @"Just now", nil);
+	}
+
 }
 
 @end

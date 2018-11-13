@@ -13,4 +13,6 @@
 - (BOOL) isEarlierThan:(NSDate *)anotherDate;
 - (BOOL) isLaterThan:(NSDate *)anotherDate;
 
+- (NSString *) toRelativeDateTime;
+
 @end
