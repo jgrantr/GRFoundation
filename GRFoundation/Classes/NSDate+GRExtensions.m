@@ -18,9 +18,6 @@ static dispatch_queue_t dispatchQueue() {
 	return queue;
 }
 
-static char keyComponents;
-
-
 @implementation NSDate (GRExtensions)
 
 - (BOOL) isEarlierThan:(NSDate *)anotherDate {
