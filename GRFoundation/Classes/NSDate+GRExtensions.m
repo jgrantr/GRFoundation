@@ -36,8 +36,10 @@ static dispatch_queue_t dispatchQueue() {
 - (NSString *) toRelativeDateTime {
 	NSDate *now = [NSDate date];
 	NSCalendar *cal = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+	cal.timeZone = [NSTimeZone localTimeZone];
+	NSDate *startOfDay = [cal startOfDayForDate:self];
 	NSUInteger units = NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
-	NSDateComponents *components = [cal components:units fromDate:self toDate:now options:0];
+	NSDateComponents *components = [cal components:units fromDate:startOfDay toDate:now options:0];
 	if (components.day >= 2) {
 		static NSDateFormatter *longAgo;
 		static NSArray *suffixes;

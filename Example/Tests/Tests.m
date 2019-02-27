@@ -155,6 +155,16 @@ GROConvertToJSON(overrideValue, ^id(void) {
 
 @end
 
+@interface CustomChildClassPartTwo : CustomParentClass
+
+@property (nonatomic, strong) NSString *notInParent;
+
+@end
+
+@implementation CustomChildClassPartTwo
+
+@end
+
 SpecBegin(InitialSpecs)
 
 describe(@"ConvertToJSON", ^{
@@ -233,6 +243,16 @@ describe(@"ConvertToJSON", ^{
 		NSError *error = nil;
 		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
 		expect(json[@"type"]).to.equal(@"Tall");
+	});
+	
+	it(@"can map only re-declared properties of a child class", ^{
+		CustomChildClassPartTwo *toSerialize = [[CustomChildClassPartTwo alloc] init];
+		toSerialize.type = @"Tall";
+		toSerialize.notInParent = @"Hello";
+		NSError *error = nil;
+		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
+		expect(json[@"type"]).to.beNil();
+		expect(json[@"notInParent"]).to.equal(@"Hello");
 	});
 });
 

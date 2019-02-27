@@ -445,7 +445,7 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 		case GROSourceTypeDictionary:
 		{
 			NSDictionary *sourceDict = source;
-			convertedObj = [NSMutableDictionary dictionaryWithCapacity:10];
+			convertedObj = [NSMutableDictionary dictionaryWithCapacity:sourceDict.count];
 			NSMutableDictionary *convertedDict = convertedObj;
 			[sourceDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
 				convertedDict[key] = [self convertToJSON:obj];

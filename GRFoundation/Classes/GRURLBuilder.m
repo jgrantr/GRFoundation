@@ -124,7 +124,7 @@ static NSMutableDictionary * parseArgs(NSString *queryString) {
 	return [params countByEnumeratingWithState:state objects:buffer count:len];
 }
 
-- (void) enumerateKeysAndObjectsUsingBlock:(void (^)(NSString *, id, BOOL *))block {
+- (void) enumerateKeysAndObjectsUsingBlock:(void (NS_NOESCAPE ^)(NSString *, id, BOOL *))block {
 	[params enumerateKeysAndObjectsUsingBlock:block];
 }
 
