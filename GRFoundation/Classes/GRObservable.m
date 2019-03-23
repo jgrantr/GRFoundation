@@ -118,7 +118,7 @@ static dispatch_queue_t _privateQ;
 		if (strongSelf.deliverCurrentValueUponSubscription) {
 			strongSelf.latestValue = value;
 		}
-		__block NSArray *subCopy;
+		__block NSArray *subCopy = nil;
 		dispatch_sync(_privateQ, ^{
 			subCopy = [strongSelf->subscribers copy];
 		});
@@ -132,7 +132,7 @@ static dispatch_queue_t _privateQ;
 - (void) error:(NSError *)error {
 	[self runOnQueue:^{
 		__strong GRObserver *strongSelf = self;
-		__block NSArray *subCopy;
+		__block NSArray *subCopy = nil;
 		dispatch_sync(_privateQ, ^{
 			subCopy = [strongSelf->subscribers copy];
 		});
@@ -151,7 +151,7 @@ static dispatch_queue_t _privateQ;
 	[self runOnQueue:^{
 		__strong GRObserver *strongSelf = self;
 		if (!strongSelf->complete) {
-			__block NSArray *subCopy;
+			__block NSArray *subCopy = nil;
 			dispatch_sync(_privateQ, ^{
 				subCopy = [strongSelf->subscribers copy];
 			});
