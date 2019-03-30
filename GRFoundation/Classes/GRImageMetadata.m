@@ -41,8 +41,19 @@ static BOOL isValidType(id obj) {
 	CGMutableImageMetadataRef mutable = CGImageMetadataCreateMutableCopy(metadata);
 	if (mutable != NULL) {
 		obj.metadata = (CGMutableImageMetadataRef _Nonnull)mutable;
+		return obj;
 	}
-	return obj;
+	return nil;
+}
+
++ (instancetype) metadata {
+	GRImageMetadata *obj = [[self alloc] init];
+	CGMutableImageMetadataRef mutable = CGImageMetadataCreateMutable();
+	if (mutable != NULL) {
+		obj.metadata = (CGMutableImageMetadataRef _Nonnull)mutable;
+		return obj;
+	}
+	return nil;
 }
 
 - (void) dealloc {
@@ -57,15 +68,31 @@ static BOOL isValidType(id obj) {
 }
 
 - (id) objectForKeyedSubscript:(NSString *)key {
-	NSString *value = (__bridge_transfer NSString *)CGImageMetadataCopyStringValueWithPath(_metadata, NULL, (__bridge CFStringRef)key);
+	CGImageMetadataTagRef tag = NULL;
+	tag = CGImageMetadataCopyTagWithPath(_metadata, NULL, (__bridge CFStringRef)key);
+	id value = nil;
+	if (tag != NULL) {
+		value = (__bridge_transfer id)CGImageMetadataTagCopyValue(tag);
+	}
+	if (tag != NULL) {
+		CFRelease(tag);
+		tag = NULL;
+	}
 	return value;
 }
 
 - (void) setObject:(id)obj forKeyedSubscript:(NSString *)key {
+	if (obj == nil) {
+		bool success = CGImageMetadataRemoveTagWithPath(_metadata, NULL, (__bridge CFStringRef)key);
+		if (!success) {
+			DDLogWarn(@"unable to remove value for path '%@'", key);
+		}
+		return;
+	}
 	if (!isValidType(obj)) {
 		@throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"object being set into a CGImageMetadataRef must be a string, number, array, or dictionary (passed in type was %@)", NSStringFromClass([obj class])] userInfo:@{}];
 	}
-	BOOL success = CGImageMetadataSetValueWithPath(_metadata, NULL, (__bridge CFStringRef)key, (__bridge CFTypeRef)obj);
+	bool success = CGImageMetadataSetValueWithPath(_metadata, NULL, (__bridge CFStringRef)key, (__bridge CFTypeRef)obj);
 	if (!success) {
 		DDLogWarn(@"unable to set value '%@' for path '%@'", obj, key);
 	}
@@ -86,6 +113,15 @@ static BOOL isValidType(id obj) {
 		id value = (__bridge_transfer id)CGImageMetadataTagCopyValue(tag);
 		return block((__bridge NSString *)path, name, value);
 	});
+}
+
+- (NSError *) registerNamespace:(NSString *)xmlNamespace forPrefix:(NSString *)prefix {
+	CFErrorRef error = NULL;
+	bool success = CGImageMetadataRegisterNamespaceForPrefix(_metadata, (__bridge CFStringRef)xmlNamespace, (__bridge CFStringRef)prefix, &error);
+	if (success) {
+		return nil;
+	}
+	return (__bridge NSError *)error;
 }
 
 @end
