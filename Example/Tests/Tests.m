@@ -133,13 +133,9 @@ GROConvertToJSON(overrideValue, ^id(void) {
 
 @end
 
-@interface CustomParentClass : NSObject
+@interface CustomParentClass : NSObject <GROMapperConfig>
 
 @property (nonatomic, strong) NSString *type;
-
-@end
-
-@implementation CustomParentClass
 
 @end
 
@@ -149,19 +145,49 @@ GROConvertToJSON(overrideValue, ^id(void) {
 
 @end
 
-@implementation CustomChildClass
-
-@dynamic type;
-
-@end
-
 @interface CustomChildClassPartTwo : CustomParentClass
 
 @property (nonatomic, strong) NSString *notInParent;
 
 @end
 
+@interface CustomContainerClass : NSObject
+
+@property (nonatomic, strong) NSArray<CustomParentClass *> *objects;
+
+@end
+
+@implementation CustomParentClass
+
++ (Class) concreteClassForObject:(NSDictionary<NSString *, id> *)object {
+	NSString *type = object[@"type"];
+	if ([type isEqualToString:@"parent"]) {
+		return [CustomParentClass class];
+	}
+	else if ([type isEqualToString:@"child"]) {
+		return [CustomChildClass class];
+	}
+	else if ([type isEqualToString:@"childPartTwo"]) {
+		return [CustomChildClassPartTwo class];
+	}
+	return [CustomParentClass class];
+}
+
+@end
+
+@implementation CustomChildClass
+
+@dynamic type;
+
+@end
+
 @implementation CustomChildClassPartTwo
+
+@end
+
+@implementation CustomContainerClass
+
+GROArrayClass(objects, CustomParentClass)
 
 @end
 
@@ -253,6 +279,47 @@ describe(@"ConvertToJSON", ^{
 		NSDictionary *json = [GROMapper jsonObjectFrom:toSerialize error:&error];
 		expect(json[@"type"]).to.beNil();
 		expect(json[@"notInParent"]).to.equal(@"Hello");
+	});
+	
+	it(@"can do polymorphic conversion from JSON", ^{
+		NSArray<NSDictionary<NSString *, id> *> *json = @[
+			@{
+				@"type" : @"parent",
+			},
+			@{
+				@"type" : @"child",
+			},
+			@{
+				@"type" : @"childPartTwo",
+			},
+		];
+		NSError *error = nil;
+		NSArray<CustomParentClass *> *objects = [GROMapper map:json to:[CustomParentClass class] error:&error];
+		expect(error).to.beNil();
+		expect(@(objects.count)).to.equal(@(3));
+		expect(objects[0]).to.beKindOf([CustomParentClass class]);
+		expect(objects[1]).to.beKindOf([CustomChildClass class]);
+		expect(objects[2]).to.beKindOf([CustomChildClassPartTwo class]);
+		NSDictionary<NSString *, NSArray<NSDictionary<NSString *, id> *> *> *json2 = @{
+			@"objects" : @[
+				@{
+					@"type" : @"parent",
+				},
+				@{
+					@"type" : @"child",
+				},
+				@{
+					@"type" : @"childPartTwo",
+				},
+			],
+		};
+		CustomContainerClass *mapped = [GROMapper map:json2 to:[CustomContainerClass class] error:&error];
+		expect(error).to.beNil();
+		expect(@(mapped.objects.count)).to.equal(@(3));
+		expect(mapped.objects[0]).to.beKindOf([CustomParentClass class]);
+		expect(mapped.objects[1]).to.beKindOf([CustomChildClass class]);
+		expect(mapped.objects[2]).to.beKindOf([CustomChildClassPartTwo class]);
+
 	});
 });
 

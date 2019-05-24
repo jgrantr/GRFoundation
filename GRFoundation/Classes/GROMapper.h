@@ -48,8 +48,12 @@ typedef NS_ENUM(NSInteger, GROMapperErrorCode) {
 
 
 /**
- A protocol for configuring only certain properties of a class to be included or excluded when converting to JSON.
- You should never define both of these methods for a given class. excludePropertiesFromJSON will be preferred and used if both are defined.
+ A protocol for configuring the conversion of a class to/from JSON.
+ The first two methods allow configuring only certain properties of a class to be included or excluded when
+ converting to JSON.  You should never define both of these methods for a given class. excludePropertiesFromJSON
+ will be preferred and used if both are defined.
+ 
+ The 3rd method (concreteClassForObject:) is useful when a polymorphic class needs to be converted from JSON.
  
  Thie protocol can either be adopted formally, or informally.  Either way, the selectors will be called if they exist.
  */
@@ -65,12 +69,22 @@ typedef NS_ENUM(NSInteger, GROMapperErrorCode) {
 + (NSSet<NSString*> *) excludePropertiesFromJSON;
 
 /**
- Return a set of properties that should be included in the JSON when performing a mapping.  If this method returns non-nil, ONLY
- the properties in this set will be included (which is sometimes easier when you have only 1 or two properties you want to include.
+ Return a set of properties that should be included in the JSON when performing a mapping.  If this method returns
+ non-nil, ONLY the properties in this set will be included (which is sometimes easier when you have only 1 or two
+ properties you want to include.
 
  @return the set of property names to include in the JSON
  */
 + (NSSet<NSString*> *) includePropertiesInJSON;
+
+/**
+ Given a dictionary representation of an object, returns the Class object that should be used for that object.
+ For a polymorphic set of classes, this would most likely be implemented in the common parent of all the objects.
+
+ @param object a dictionary representation of an object
+ @return the class to be used for instantiating the object
+ */
++ (Class) concreteClassForObject:(NSDictionary<NSString *, id> *)object;
 
 @end
 

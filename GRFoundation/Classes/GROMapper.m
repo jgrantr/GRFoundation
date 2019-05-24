@@ -395,8 +395,16 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 - (void) map:(NSArray *)source toArray:(NSMutableArray *)array withClass:(Class)clazz {
 	if (source == nil) @throw errorWithCodeAndDescription(GROMapperErrorCodeSourceArrayIsNil, @"source array is nil");
 	if (array == nil) @throw errorWithCodeAndDescription(GROMapperErrorCodeTargetArrayIsNil, @"target array is nil");
+	BOOL respondsToCustomClass = [clazz respondsToSelector:@selector(concreteClassForObject:)];
 	for (id item in source) {
-		id targetItem = [[clazz alloc] init];
+		id targetItem = nil;
+		if (respondsToCustomClass) {
+			Class concreteClass = [clazz concreteClassForObject:item];
+			targetItem = [[concreteClass alloc] init];
+		}
+		else {
+			targetItem = [[clazz alloc] init];
+		}
 		if (!targetItem) @throw errorWithCodeAndDescription(GROMapperErrorCodeCouldNotCreateInstanceOfMappedClass, @"could not create object from class: %@", clazz);
 		[array addObject:targetItem];
 		[self map:item toObject:targetItem];

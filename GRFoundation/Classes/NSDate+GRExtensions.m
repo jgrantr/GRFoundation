@@ -32,6 +32,33 @@ static dispatch_queue_t dispatchQueue() {
 	return NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitWeekOfMonth|NSCalendarUnitWeekOfYear|NSCalendarUnitWeekday|NSCalendarUnitWeekdayOrdinal|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond;
 }
 
+- (NSString *) longAgoDateStringWithCalendar:(NSCalendar *)cal {
+	static NSDateFormatter *longAgo;
+	static NSArray *suffixes;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		longAgo = [[NSDateFormatter alloc] init];
+		longAgo.dateFormat = [NSString stringWithFormat:NSLocalizedStringWithDefaultValue(@"longAgo", nil, [NSBundle mainBundle], @"MMM d'${suffix} at' %@", @"Should read something like 'July 3rd at 3:45 PM"), [NSDateFormatter dateFormatFromTemplate:@"jj:mm" options:0 locale:[NSLocale autoupdatingCurrentLocale]]];
+		NSString *suffix_string = @"|st|nd|rd|th|th|th|th|th|th|th|th|th|th|th|th|th|th|th|th|th|st|nd|rd|th|th|th|th|th|th|th|st";
+		suffixes = [suffix_string componentsSeparatedByString: @"|"];
+	});
+	__block NSString *value = nil;
+	dispatch_sync(dispatchQueue(), ^{
+		value = [longAgo stringFromDate:self];
+	});
+	NSLocale *locale = [NSLocale autoupdatingCurrentLocale];
+	NSString *languageCode = [locale objectForKey:NSLocaleLanguageCode];
+	NSString *dateString = nil;
+	if ([languageCode caseInsensitiveCompare:@"en"] == NSOrderedSame) {
+		NSInteger day = [cal component:NSCalendarUnitDay fromDate:self];
+		NSString *suffix = suffixes[day];
+		dateString = [value stringByReplacingOccurrencesOfString:@"${suffix}" withString:suffix];
+	}
+	else {
+		dateString = [value stringByReplacingOccurrencesOfString:@"${suffix}" withString:@""];
+	}
+	return dateString;
+}
 
 - (NSString *) toRelativeDateTime {
 	NSDate *now = [NSDate date];
@@ -39,35 +66,20 @@ static dispatch_queue_t dispatchQueue() {
 	cal.timeZone = [NSTimeZone localTimeZone];
 	NSDate *startOfDay = [cal startOfDayForDate:self];
 	NSUInteger units = NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
-	NSDateComponents *components = [cal components:units fromDate:startOfDay toDate:now options:0];
-	if (components.day >= 2) {
-		static NSDateFormatter *longAgo;
-		static NSArray *suffixes;
-		static dispatch_once_t onceToken;
-		dispatch_once(&onceToken, ^{
-			longAgo = [[NSDateFormatter alloc] init];
-			longAgo.dateFormat = [NSString stringWithFormat:NSLocalizedStringWithDefaultValue(@"longAgo", nil, [NSBundle mainBundle], @"MMM d'${suffix} at' %@", @"Should ready something like 'July 3rd at 3:45 PM"), [NSDateFormatter dateFormatFromTemplate:@"jj:mm" options:0 locale:[NSLocale autoupdatingCurrentLocale]]];
-			NSString *suffix_string = @"|st|nd|rd|th|th|th|th|th|th|th|th|th|th|th|th|th|th|th|th|th|st|nd|rd|th|th|th|th|th|th|th|st";
-			suffixes = [suffix_string componentsSeparatedByString: @"|"];
-		});
-		__block NSString *value = nil;
-		dispatch_sync(dispatchQueue(), ^{
-			value = [longAgo stringFromDate:self];
-		});
-		NSLocale *locale = [NSLocale autoupdatingCurrentLocale];
-		NSString *languageCode = [locale objectForKey:NSLocaleLanguageCode];
-		NSString *dateString = nil;
-		if ([languageCode caseInsensitiveCompare:@"en"] == NSOrderedSame) {
-			NSInteger day = [cal component:NSCalendarUnitDay fromDate:self];
-			NSString *suffix = suffixes[day];
-			dateString = [value stringByReplacingOccurrencesOfString:@"${suffix}" withString:suffix];
+	NSDateComponents *startOfDayComponents = [cal components:units fromDate:startOfDay toDate:now options:0];
+	NSDateComponents *components = [cal components:units fromDate:self toDate:now options:0];
+	if (components.day == 0 && components.hour == 0) {
+		if (components.minute >= 1) {
+			return [NSString stringWithFormat:startOfDayComponents.minute == 1 ? NSLocalizedStringWithDefaultValue(@"minuteAgo", nil, [NSBundle mainBundle], @"%ld minute ago", nil) : NSLocalizedStringWithDefaultValue(@"minutesAgo", nil, [NSBundle mainBundle], @"%ld minutes ago", nil), startOfDayComponents.minute];
 		}
 		else {
-			dateString = [value stringByReplacingOccurrencesOfString:@"${suffix}" withString:@""];
+			return NSLocalizedStringWithDefaultValue(@"justNow", nil, [NSBundle mainBundle], @"Just now", nil);
 		}
-		return dateString;
 	}
-	else if (components.day == 1) {
+	if (startOfDayComponents.day >= 2) {
+		return [self longAgoDateStringWithCalendar:cal];
+	}
+	else if (startOfDayComponents.day == 1) {
 		static NSDateFormatter *yesterdayRelative;
 		static dispatch_once_t onceToken;
 		dispatch_once(&onceToken, ^{
@@ -80,7 +92,7 @@ static dispatch_queue_t dispatchQueue() {
 		});
 		return value;
 	}
-	else if (components.hour >= 1) {
+	else if (startOfDayComponents.hour >= 1) {
 		static NSDateFormatter *todayRelative;
 		static dispatch_once_t onceToken;
 		dispatch_once(&onceToken, ^{
@@ -93,13 +105,9 @@ static dispatch_queue_t dispatchQueue() {
 		});
 		return value;
 	}
-	else if (components.minute >= 1) {
-		return [NSString stringWithFormat:components.minute == 1 ? NSLocalizedStringWithDefaultValue(@"minuteAgo", nil, [NSBundle mainBundle], @"%ld minute ago", nil) : NSLocalizedStringWithDefaultValue(@"minutesAgo", nil, [NSBundle mainBundle], @"%ld minutes ago", nil), components.minute];
-	}
 	else {
-		return NSLocalizedStringWithDefaultValue(@"justNow", nil, [NSBundle mainBundle], @"Just now", nil);
+		return [self longAgoDateStringWithCalendar:cal];
 	}
-
 }
 
 @end
