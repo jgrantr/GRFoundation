@@ -399,7 +399,7 @@ describe(@"date formatting", ^{
 		NSDateFormatter *monthAndDay = [[NSDateFormatter alloc] init];
 		monthAndDay.dateFormat = @"MMM d";
 		expect(now.toRelativeDateTime).to.equal(@"Just now");
-		expect(twoMinutesAgo.toRelativeDateTime).to.endWith(@"minutes ago");
+		expect(twoMinutesAgo.toRelativeDateTime).to.endWith(@"2 minutes ago");
 		expect(twoHoursAog.toRelativeDateTime).to.startWith(@"Today");
 		expect(yesterday.toRelativeDateTime).to.startWith(@"Yesterday");
 		expect(twoDaysAgo.toRelativeDateTime).to.startWith([monthAndDay stringFromDate:twoDaysAgo]);

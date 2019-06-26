@@ -70,7 +70,7 @@ static dispatch_queue_t dispatchQueue() {
 	NSDateComponents *components = [cal components:units fromDate:self toDate:now options:0];
 	if (components.day == 0 && components.hour == 0) {
 		if (components.minute >= 1) {
-			return [NSString stringWithFormat:startOfDayComponents.minute == 1 ? NSLocalizedStringWithDefaultValue(@"minuteAgo", nil, [NSBundle mainBundle], @"%ld minute ago", nil) : NSLocalizedStringWithDefaultValue(@"minutesAgo", nil, [NSBundle mainBundle], @"%ld minutes ago", nil), startOfDayComponents.minute];
+			return [NSString stringWithFormat:startOfDayComponents.minute == 1 ? NSLocalizedStringWithDefaultValue(@"minuteAgo", nil, [NSBundle mainBundle], @"%ld minute ago", nil) : NSLocalizedStringWithDefaultValue(@"minutesAgo", nil, [NSBundle mainBundle], @"%ld minutes ago", nil), components.minute];
 		}
 		else {
 			return NSLocalizedStringWithDefaultValue(@"justNow", nil, [NSBundle mainBundle], @"Just now", nil);
