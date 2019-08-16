@@ -193,7 +193,7 @@ GROArrayClass(objects, CustomParentClass)
 
 SpecBegin(InitialSpecs)
 
-describe(@"ConvertToJSON", ^{
+describe(@"JSONConversion", ^{
 
 	it(@"can serialize", ^{
 		TestSerializeClass *toSerialize = [[TestSerializeClass alloc] init];
@@ -321,6 +321,17 @@ describe(@"ConvertToJSON", ^{
 		expect(mapped.objects[2]).to.beKindOf([CustomChildClassPartTwo class]);
 
 	});
+	
+	it(@"can map concrete subclasses", ^{
+		NSDictionary *json = @{
+			@"type" : @"childPartTwo",
+		};
+		NSError *error = nil;
+		CustomParentClass *obj = [GROMapper map:json to:[CustomParentClass class] error:&error];
+		expect(error).to.beNil();
+		expect(obj).to.beKindOf([CustomChildClassPartTwo class]);
+	});
+	
 });
 
 describe(@"GRKVOObservable", ^{

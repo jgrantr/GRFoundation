@@ -236,9 +236,17 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 				@throw errorWithCodeAndDescription(GROMapperErrorCodeInvalidRootJSONObject, @"source object is an invalid JSON type (passed in %@)", source);
 				break;
 			case GROJsonTypeObject:
-				rootObj = [[clazz alloc] init];
+			{
+				if ([clazz respondsToSelector:@selector(concreteClassForObject:)]) {
+					Class concreteClass = [clazz concreteClassForObject:source];
+					rootObj = [[concreteClass alloc] init];
+				}
+				else {
+					rootObj = [[clazz alloc] init];
+				}
 				[self map:source toObject:rootObj];
 				break;
+			}
 			case GROJsonTypeArray:
 			{
 				NSArray *sourceArray = source;
@@ -357,7 +365,13 @@ static Class classForKeyWithTarget(NSString *key, id target) {
 						valueToSet = actualValue;
 					}
 					else {
-						valueToSet = [[propertyClass alloc] init];
+						if ([propertyClass respondsToSelector:@selector(concreteClassForObject:)]) {
+							Class actualClass = [propertyClass concreteClassForObject:actualValue];
+							valueToSet = [[actualClass alloc] init];
+						}
+						else {
+							valueToSet = [[propertyClass alloc] init];
+						}
 						[self map:actualValue toObject:valueToSet];
 					}
 					break;
